@@ -13,6 +13,7 @@ struct AssetManager {
   Texture2D desertSlime{};
   Texture2D iceSlime{};
   Texture2D zombie{};
+  Texture2D items{};
 
   void loadAll(const char *texturePackPath = nullptr);
 

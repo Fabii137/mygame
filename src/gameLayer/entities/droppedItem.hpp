@@ -21,6 +21,7 @@ public:
   void setItemCount(int count);
 
   int getMaxStackSize(std::uint16_t itemType) const;
+  Vector2 getSize() const;
 
 private:
   std::uint16_t m_ItemType{};

@@ -6,7 +6,7 @@
 
 struct Wall {
   enum Type : std::uint16_t {
-    DirtWall = Block::BLOCKS_COUNT,
+    DirtWall = Block::BLOCKS_END,
     StoneWall,
     WoodWall,
     SandStoneWall,
@@ -26,6 +26,7 @@ struct Wall {
     BoneBrickWall,
 
     WALLS_COUNT,
+    WALLS_END = 20000,
   };
 
   Type type{};

@@ -7,6 +7,8 @@
 #include "entity.hpp"
 #include "entityHolder.hpp"
 #include "helpers.hpp"
+#include "items.hpp"
+#include "raylib.h"
 #include "raymath.h"
 
 DroppedItem::DroppedItem(std::uint16_t itemType) : m_ItemType(itemType) {
@@ -15,9 +17,13 @@ DroppedItem::DroppedItem(std::uint16_t itemType) : m_ItemType(itemType) {
 }
 
 void DroppedItem::render(AssetManager &assetManager) const {
-  Rectangle aabb{getRectangleForEntity(m_Physics.transform, 1, 1)};
+  Vector2 size{getSize()};
+  Rectangle aabb{getRectangleForEntity(m_Physics.transform, size.x, size.y)};
 
-  drawTextureAtlas(assetManager.textures, m_ItemType, 4, aabb);
+  Texture2D texture{getTextureForItemType(m_ItemType, assetManager)};
+  Rectangle source{getTextureCoordsForItemType(m_ItemType)};
+
+  DrawTexturePro(texture, source, aabb, {}, 0.f, WHITE);
 }
 
 bool DroppedItem::update(float dt, EntityUpdateData &updateData) {
@@ -69,5 +75,15 @@ int DroppedItem::getMaxStackSize(std::uint16_t itemType) const {
 float DroppedItem::getMaxHealth() const { return 1.f; }
 
 std::uint16_t DroppedItem::getItemType() const { return m_ItemType; }
+
 int DroppedItem::getItemCount() const { return m_ItemCounter; }
+
 void DroppedItem::setItemCount(int count) { m_ItemCounter = count; }
+
+Vector2 DroppedItem::getSize() const {
+  if (isBlock(m_ItemType) || isWall(m_ItemType)) {
+    return {1.f, 1.f};
+  }
+
+  return {0.5f, 0.5f};
+}

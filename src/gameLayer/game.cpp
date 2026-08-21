@@ -11,6 +11,7 @@
 #include "game.hpp"
 
 #include "assetManager.hpp"
+#include "audio.hpp"
 #include "blocks.hpp"
 #include "constants.hpp"
 #include "entity.hpp"
@@ -18,11 +19,13 @@
 #include "gameMap.hpp"
 #include "helpers.hpp"
 #include "imgui.h"
+#include "items.hpp"
 #include "physics.hpp"
 #include "random.h"
 #include "raylib.h"
 #include "raymath.h"
 #include "saveMap.hpp"
+#include "settings.hpp"
 #include "walls.hpp"
 #include "worldGenerator.hpp"
 
@@ -51,6 +54,7 @@ void Game::spawnDroppedItem(Vector2 position, std::uint16_t type) {
 }
 
 bool Game::init() {
+  Audio::init();
   m_AssetManager.loadAll();
 
   WorldGenerator worldGenerator{m_GameMap, m_WorldSettings, m_Seed};
@@ -75,6 +79,7 @@ bool Game::update() {
     m_ShowImGui = !m_ShowImGui;
   }
 
+  Audio::update();
   updateEnemySpawning(dt);
   updatePlayer(dt);
   updateCamera();
@@ -92,8 +97,31 @@ bool Game::update() {
 void Game::close() { std::cout << "\n\nCLOSED!!!!!!!!!\n\n"; }
 
 void Game::updateCamera() {
+  int scrWidth{GetScreenWidth()};
+  int scrHeight{GetScreenHeight()};
+
   m_Camera.target = m_Player.position();
-  m_Camera.offset = {GetScreenWidth() / 2.f, GetScreenHeight() / 2.f};
+  m_Camera.offset = {scrWidth * 0.5f, scrHeight * 0.5f};
+
+  // clamp camera
+  float viewWidth{scrWidth / m_Camera.zoom};
+  float viewHeight{scrHeight / m_Camera.zoom};
+
+  if (viewWidth <= m_GameMap.w) {
+    float minX{viewWidth * 0.5f};
+    float maxX{m_GameMap.w - viewWidth * 0.5f};
+    m_Camera.target.x = std::clamp(m_Camera.target.x, minX, maxX);
+  } else {
+    m_Camera.target.x = m_GameMap.w * 0.5f;
+  }
+
+  if (viewHeight <= m_GameMap.h) {
+    float minY{viewHeight * 0.5f};
+    float maxY(m_GameMap.h - viewHeight * 0.5f);
+    m_Camera.target.y = std::clamp(m_Camera.target.y, minY, maxY);
+  } else {
+    m_Camera.target.y = m_GameMap.h * 0.5f;
+  }
 }
 
 void Game::updatePlayer(float dt) {
@@ -147,6 +175,8 @@ void Game::updateEntities(float dt) {
     if (shouldKill) {
       if (entity->getType() == EntityType::Slime) {
         spawnDroppedItem(it->second->position(), Block::GoldBlock);
+      } else if (entity->getType() == EntityType::Zombie) {
+        spawnDroppedItem(it->second->position(), Block::IronBlock);
       }
       it = m_Entities.entities.erase(it);
       continue;
@@ -345,7 +375,9 @@ void Game::render() {
       int variant{getTextureVariant(x, y)};
 
       if (wall.type != static_cast<Wall::Type>(Block::Air)) {
-        drawTextureAtlas(m_AssetManager.textures, wall.type, variant, dest);
+        int atlasX{wall.type - static_cast<Wall::Type>(Block::BLOCKS_END) +
+                   static_cast<Wall::Type>(Block::BLOCKS_COUNT)};
+        drawTextureAtlas(m_AssetManager.textures, atlasX, variant, dest);
       }
       if (block.type == Block::WoodLog) {
         int col{getTreeAtlasColumn(x, y)};
@@ -497,6 +529,21 @@ void Game::renderImGuiWindows() {
 
     loadMapDataFromFile(m_CopyStructure.mapData, m_CopyStructure.wallData,
                         m_CopyStructure.w, m_CopyStructure.h, path.c_str());
+  }
+  ImGui::Separator();
+
+  ImGui::Text("Settings");
+  ImGui::SliderFloat("Master Volume", &getSettings().masterVolume, 0.f, 1.f);
+  ImGui::SliderFloat("Sounds Volume", &getSettings().soundsVolume, 0.f, 1.f);
+  ImGui::SliderFloat("Music Volume", &getSettings().musicVolume, 0.f, 1.f);
+  if (ImGui::Button("Play Sound")) {
+    Audio::playSound(Audio::PlaceBlock);
+  }
+  if (ImGui::Button("Play Music Forest")) {
+    Audio::playMusic(Audio::MusicForest);
+  }
+  if (ImGui::Button("Play Music Desert")) {
+    Audio::playMusic(Audio::MusicDesert);
   }
   ImGui::Separator();
 
