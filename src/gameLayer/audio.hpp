@@ -1,13 +1,6 @@
 #pragma once
 
 namespace Audio {
-void init();
-void loadAllMusicAndSounds();
-void update();
-void playSound(int sound, float volume = 1.f);
-void playMusic(int music);
-void stopMusic();
-bool isMusicPlaying();
 
 enum Sounds {
   NoneSound = 0,
@@ -28,4 +21,13 @@ enum Musics {
 
   MUSIC_COUNT,
 };
+
+void init();
+void loadAllMusicAndSounds();
+void update(float dt);
+void playSound(int sound, float volume = 1.f);
+void playMusic(Musics music);
+void stopMusic();
+bool isMusicPlaying();
+
 } // namespace Audio

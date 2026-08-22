@@ -12,6 +12,7 @@
 
 #include "assetManager.hpp"
 #include "audio.hpp"
+#include "background.hpp"
 #include "blocks.hpp"
 #include "constants.hpp"
 #include "entity.hpp"
@@ -80,7 +81,7 @@ bool Game::update() {
     m_ShowImGui = !m_ShowImGui;
   }
 
-  Audio::update();
+  updateAudio(dt);
   updateSettings();
   updateEnemySpawning(dt);
   updatePlayer(dt);
@@ -88,6 +89,7 @@ bool Game::update() {
   updateEntities(dt);
   updateStructureSelection();
   updateWorldEditing();
+  m_Background.update(dt);
 
   ClearBackground({75, 75, 150, 255});
   render();
@@ -124,6 +126,39 @@ void Game::updateCamera() {
   } else {
     m_Camera.target.y = m_GameMap.h * 0.5f;
   }
+}
+
+void Game::updateAudio(float dt) {
+  Audio::update(dt);
+
+  using MusicType = Audio::Musics;
+
+  MusicType type{};
+  if (m_Player.position().y > 180.f) {
+    type = MusicType::MusicCave;
+  } else {
+    for (const Biome &biome : m_GameMap.biomes) {
+      if (m_Player.position().x >= biome.startX &&
+          m_Player.position().x < biome.endX) {
+        switch (biome.type) {
+        case Biome::Forest:
+          type = MusicType::MusicForest;
+          break;
+        case Biome::Desert:
+          type = MusicType::MusicDesert;
+          break;
+        case Biome::Snow:
+          type = MusicType::MusicSnow;
+          break;
+        default:
+          break;
+        }
+        break;
+      }
+    }
+  }
+
+  Audio::playMusic(type);
 }
 
 void Game::updatePlayer(float dt) {
@@ -346,10 +381,7 @@ void Game::updateStructureSelection() {
 }
 
 void Game::render() {
-  Vector2 mapSize{static_cast<float>(m_GameMap.w),
-                  static_cast<float>(m_GameMap.h)};
-  m_Background.draw(m_AssetManager, m_Camera, mapSize);
-
+  renderBackground();
   BeginMode2D(m_Camera);
 
   Vector2 screenSize{
@@ -437,7 +469,7 @@ void Game::render() {
     DrawRectangleLinesEx(rect, 0.1f, {20, 101, 250, 145});
   }
 
-  for (const auto &[key, entity] : m_Entities.entities) {
+  for (const auto &[id, entity] : m_Entities.entities) {
     entity->render(m_AssetManager);
   }
 
@@ -448,6 +480,43 @@ void Game::render() {
   }
 
   EndMode2D();
+
+  Color ambientTint{m_Background.getAmbientTint()};
+  DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), ambientTint);
+}
+
+void Game::renderBackground() {
+  BackgroundType type{};
+
+  if (m_Player.position().y > 180.f) {
+    type = BackgroundType::Cave;
+  } else {
+    for (const Biome &biome : m_GameMap.biomes) {
+      if (m_Player.position().x >= biome.startX &&
+          m_Player.position().x < biome.endX) {
+        switch (biome.type) {
+        case Biome::Forest:
+          type = BackgroundType::Forest;
+          break;
+        case Biome::Desert:
+          type = BackgroundType::Desert;
+          break;
+        case Biome::Snow:
+          type = BackgroundType::Snow;
+          break;
+        default:
+          break;
+        }
+        break;
+      }
+    }
+  }
+
+  m_Background.setBackground(type);
+
+  Vector2 mapSize{static_cast<float>(m_GameMap.w),
+                  static_cast<float>(m_GameMap.h)};
+  m_Background.draw(m_AssetManager, m_Camera, mapSize);
 }
 
 int Game::getTextureVariant(int x, int y) {

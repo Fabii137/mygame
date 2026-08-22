@@ -25,6 +25,7 @@ private:
   void spawnZombie(Vector2 position);
   void spawnSlime(Vector2 position, SlimeType type);
   void spawnDroppedItem(Vector2 position, std::uint16_t type);
+  void updateAudio(float dt);
   void updatePlayer(float dt);
   void updateCamera();
   void updateEntities(float dt);
@@ -32,6 +33,7 @@ private:
   void updateWorldEditing();
   void updateStructureSelection();
   void render();
+  void renderBackground();
   int getTextureVariant(int x, int y);
   int getTreeAtlasColumn(int x, int y);
   std::optional<Vector2> findGroundSpawnPosition(float x);

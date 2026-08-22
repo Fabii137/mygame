@@ -5,7 +5,8 @@
 #include <vector>
 
 #include "blocks.hpp"
-#include "gameMap.hpp"
+
+struct GameMap;
 
 struct NoiseData {
   float *mountain{};

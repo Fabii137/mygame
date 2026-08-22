@@ -31,10 +31,26 @@ void AssetManager::loadAll(const char *texturePackPath) {
   load(zombie, "zombie.png");
   load(items, "items.png");
 
-  load(forestBg, "forestBG.png");
-  load(desertBg, "desertBG.png");
-  load(snowBg, "snowBG.png");
-  load(caveBg, "caveBG.png");
+  // backgrounds
+  load(forestMountainsClose, "backgrounds/forest/mountainsClose.png");
+  load(forestMountainsFar, "backgrounds/forest/mountainsFar.png");
+  load(forestTrees, "backgrounds/forest/trees.png");
+  load(desertDunesBack, "backgrounds/desert/dunesBack.png");
+  load(desertDunesFront, "backgrounds/desert/dunesFront.png");
+  load(snowMountainsBack, "backgrounds/snow/mountainsBack.png");
+  load(snowMountainsFront, "backgrounds/snow/mountainsFront.png");
+  load(snowTrees, "backgrounds/snow/trees.png");
+  load(snowHill, "backgrounds/snow/hill.png");
+  load(caveBg, "backgrounds/caveBG.png");
+  load(clouds, "backgrounds/sky/clouds.png");
+  load(cloudsNight, "backgrounds/sky/cloudsNight.png");
+  load(moon, "backgrounds/sky/moon.png");
+  load(moonStandalone, "backgrounds/sky/moonStandalone.png");
+  load(nightSky, "backgrounds/sky/nightSky.png");
+  load(sky, "backgrounds/sky/sky.png");
+  load(stars, "backgrounds/sky/stars.png");
+  load(sun, "backgrounds/sky/sun.png");
+  load(sunStandalone, "backgrounds/sky/sunStandalone.png");
 }
 
 void AssetManager::unloadTexture(Texture2D &texture) {

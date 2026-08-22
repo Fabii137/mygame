@@ -7,6 +7,7 @@
 #include <optional>
 #include <random>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "worldGenerator.hpp"
@@ -52,6 +53,8 @@ void WorldGenerator::generate() {
   generateOres(terrainData, rng);
   generateWorms(rng);
   generateStructures(terrainData, rng);
+
+  m_GameMap.biomes = std::move(terrainData.biomes);
 }
 
 TerrainData WorldGenerator::generateBaseTerrain(const NoiseData &noiseData) {

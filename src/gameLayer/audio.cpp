@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include <algorithm>
 #include <random>
 #include <vector>
@@ -11,6 +13,7 @@
 
 namespace Audio {
 constexpr int MAX_PLAYING_SOUNDS{12};
+constexpr float MUSIC_TRANSITION_DURATION{1.f};
 
 int getPlayingSoundsCount();
 
@@ -22,7 +25,9 @@ void init() {
 }
 
 std::vector<Music> allMusic{};
-int currentMusicPlaying = 0;
+Musics currentMusicPlaying{};
+Musics currentTransitionMusic{};
+float musicTransitionTime{};
 
 std::vector<std::vector<Sound>> allSounds{};
 std::ranlux24_base rng{std::random_device{}()};
@@ -76,14 +81,40 @@ void loadAllMusicAndSounds() {
   permaAssertComment(allSounds.size() == SOUNDS_COUNT, "Forgot to add sound!");
 }
 
-void update() {
+void update(float dt) {
   if (!isMusicPlaying()) {
-    currentMusicPlaying = 0;
+    currentMusicPlaying = Musics::NoneMusic;
     return;
   }
 
-  SetMusicVolume(allMusic[currentMusicPlaying],
-                 getSettings().musicVolume * getSettings().masterVolume);
+  float targetVolume{getSettings().masterVolume * getSettings().musicVolume};
+  if (currentTransitionMusic != Musics::NoneMusic) {
+    musicTransitionTime -= dt;
+
+    float t{
+        std::clamp(musicTransitionTime / MUSIC_TRANSITION_DURATION, 0.f, 1.f)};
+
+    SetMusicVolume(allMusic[currentMusicPlaying],
+                   std::lerp(0.f, targetVolume, 1.f - t));
+    SetMusicVolume(allMusic[currentTransitionMusic],
+                   std::lerp(0.f, targetVolume, t));
+
+    UpdateMusicStream(allMusic[currentTransitionMusic]);
+    UpdateMusicStream(allMusic[currentMusicPlaying]);
+
+    if (musicTransitionTime <= 0.f) {
+      StopMusicStream(allMusic[currentTransitionMusic]);
+
+      currentTransitionMusic = Musics::NoneMusic;
+      musicTransitionTime = 0.f;
+
+      SetMusicVolume(allMusic[currentMusicPlaying], targetVolume);
+    }
+
+    return;
+  }
+
+  SetMusicVolume(allMusic[currentMusicPlaying], targetVolume);
   UpdateMusicStream(allMusic[currentMusicPlaying]);
 }
 
@@ -131,7 +162,7 @@ int getPlayingSoundsCount() {
   return count;
 }
 
-void playMusic(int music) {
+void playMusic(Musics music) {
   if (allMusic.size() <= music) {
     return;
   }
@@ -139,23 +170,29 @@ void playMusic(int music) {
     return;
   }
 
-  StopMusicStream(allMusic[currentMusicPlaying]);
+  if (currentMusicPlaying != Musics::NoneMusic) {
+    currentTransitionMusic = currentMusicPlaying;
+  } else {
+    currentTransitionMusic = Musics::NoneMusic;
+  }
+
+  currentMusicPlaying = music;
+  musicTransitionTime = MUSIC_TRANSITION_DURATION;
 
   allMusic[music].looping = true;
   PlayMusicStream(allMusic[music]);
-  SetMusicVolume(allMusic[music],
-                 getSettings().musicVolume * getSettings().masterVolume);
 
-  currentMusicPlaying = music;
+  // transition starts silent
+  SetMusicVolume(allMusic[music], 0.f);
 }
 
 void stopMusic() {
   StopMusicStream(allMusic[currentMusicPlaying]);
-  currentMusicPlaying = 0;
+  currentMusicPlaying = Musics::NoneMusic;
 }
 
 bool isMusicPlaying() {
-  if (!currentMusicPlaying) {
+  if (currentMusicPlaying == Musics::NoneMusic) {
     return false;
   }
 

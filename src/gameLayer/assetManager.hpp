@@ -15,10 +15,25 @@ struct AssetManager {
   Texture2D zombie{};
   Texture2D items{};
 
-  Texture2D forestBg{};
-  Texture2D desertBg{};
-  Texture2D snowBg{};
+  Texture2D forestMountainsClose{};
+  Texture2D forestMountainsFar{};
+  Texture2D forestTrees{};
+  Texture2D desertDunesBack{};
+  Texture2D desertDunesFront{};
+  Texture2D snowMountainsBack{};
+  Texture2D snowMountainsFront{};
+  Texture2D snowTrees{};
+  Texture2D snowHill{};
   Texture2D caveBg{};
+  Texture2D clouds{};
+  Texture2D cloudsNight{};
+  Texture2D moon{};
+  Texture2D moonStandalone{};
+  Texture2D nightSky{};
+  Texture2D sky{};
+  Texture2D stars{};
+  Texture2D sun{};
+  Texture2D sunStandalone{};
 
   void loadAll(const char *texturePackPath = nullptr);
 

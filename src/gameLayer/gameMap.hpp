@@ -5,6 +5,7 @@
 #include "blocks.hpp"
 #include "raylib.h"
 #include "walls.hpp"
+#include "worldGenerator.hpp"
 
 struct MapCell {
   int x{};
@@ -16,6 +17,7 @@ struct MapCell {
 struct GameMap {
   int w{};
   int h{};
+  std::vector<Biome> biomes{};
 
   std::vector<Block> mapData;
   std::vector<Wall> wallData;
