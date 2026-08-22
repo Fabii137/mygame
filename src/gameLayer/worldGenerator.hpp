@@ -25,7 +25,7 @@ struct NoiseData {
 
 struct Biome {
   enum Type : std::uint16_t {
-    Plains = 0,
+    Forest = 0,
     Desert,
     Snow,
     BIOMES_COUNT,
@@ -117,12 +117,12 @@ struct WorldSettings {
   std::vector<StructureSettings> structures{
       {
           .variants = {"tree", "tree2", "tree3"},
-          .biomes = {Biome::Plains},
+          .biomes = {Biome::Forest},
           .spawnChance = 0.08f,
       },
       {
           .variants = {"house"},
-          .biomes = {Biome::Plains},
+          .biomes = {Biome::Forest},
           .spawnChance = 0.005f,
       },
       {
@@ -197,7 +197,7 @@ private:
   void applyBiomes(const TerrainData &terrainData);
   void generateDesertColumn(int x, const Biome &biome,
                             const TerrainData &terrainData);
-  void generatePlainsColumn(int x, const Biome &biome,
+  void generateForestColumn(int x, const Biome &biome,
                             const TerrainData &terrainData);
   void generateSnowColumn(int x, const Biome &biome,
                           const TerrainData &terrainData);

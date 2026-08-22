@@ -156,7 +156,7 @@ bool WorldGenerator::isValidSurfaceBlock(const Biome &biome, int x, int y) {
   }
 
   switch (biome.type) {
-  case Biome::Plains:
+  case Biome::Forest:
     return block->type == Block::GrassBlock;
   case Biome::Desert:
     return block->type == Block::Sand;
@@ -171,8 +171,8 @@ void WorldGenerator::applyBiomes(const TerrainData &terrainData) {
   for (const Biome &biome : terrainData.biomes) {
     for (int x{biome.startX}; x < biome.endX; x++) {
       switch (biome.type) {
-      case Biome::Plains:
-        generatePlainsColumn(x, biome, terrainData);
+      case Biome::Forest:
+        generateForestColumn(x, biome, terrainData);
         break;
       case Biome::Desert:
         generateDesertColumn(x, biome, terrainData);
@@ -223,7 +223,7 @@ void WorldGenerator::generateDesertColumn(int x, const Biome &biome,
   }
 }
 
-void WorldGenerator::generatePlainsColumn(int x, const Biome &biome,
+void WorldGenerator::generateForestColumn(int x, const Biome &biome,
                                           const TerrainData &terrainData) {
   int surfaceHeight{terrainData.surfaceHeights[x]};
   int stoneHeight{terrainData.stoneHeights[x]};
