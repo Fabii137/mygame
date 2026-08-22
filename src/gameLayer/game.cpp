@@ -89,7 +89,7 @@ bool Game::update() {
   updateEntities(dt);
   updateStructureSelection();
   updateWorldEditing();
-  m_Background.update(dt);
+  updateBackground(dt);
 
   ClearBackground({75, 75, 150, 255});
   render();
@@ -380,6 +380,38 @@ void Game::updateStructureSelection() {
   }
 }
 
+void Game::updateBackground(float dt) {
+  BackgroundType type{};
+
+  if (m_Player.position().y > 180.f) {
+    type = BackgroundType::Cave;
+  } else {
+    for (const Biome &biome : m_GameMap.biomes) {
+      if (m_Player.position().x >= biome.startX &&
+          m_Player.position().x < biome.endX) {
+        switch (biome.type) {
+        case Biome::Forest:
+          type = BackgroundType::Forest;
+          break;
+        case Biome::Desert:
+          type = BackgroundType::Desert;
+          break;
+        case Biome::Snow:
+          type = BackgroundType::Snow;
+          break;
+        default:
+          break;
+        }
+        break;
+      }
+    }
+  }
+
+  m_Background.setBackground(type);
+
+  m_Background.update(dt);
+}
+
 void Game::render() {
   renderBackground();
   BeginMode2D(m_Camera);
@@ -486,34 +518,6 @@ void Game::render() {
 }
 
 void Game::renderBackground() {
-  BackgroundType type{};
-
-  if (m_Player.position().y > 180.f) {
-    type = BackgroundType::Cave;
-  } else {
-    for (const Biome &biome : m_GameMap.biomes) {
-      if (m_Player.position().x >= biome.startX &&
-          m_Player.position().x < biome.endX) {
-        switch (biome.type) {
-        case Biome::Forest:
-          type = BackgroundType::Forest;
-          break;
-        case Biome::Desert:
-          type = BackgroundType::Desert;
-          break;
-        case Biome::Snow:
-          type = BackgroundType::Snow;
-          break;
-        default:
-          break;
-        }
-        break;
-      }
-    }
-  }
-
-  m_Background.setBackground(type);
-
   Vector2 mapSize{static_cast<float>(m_GameMap.w),
                   static_cast<float>(m_GameMap.h)};
   m_Background.draw(m_AssetManager, m_Camera, mapSize);

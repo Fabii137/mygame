@@ -32,6 +32,7 @@ private:
   void updateEnemySpawning(float dt);
   void updateWorldEditing();
   void updateStructureSelection();
+  void updateBackground(float dt);
   void render();
   void renderBackground();
   int getTextureVariant(int x, int y);
