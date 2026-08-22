@@ -15,6 +15,11 @@ struct AssetManager {
   Texture2D zombie{};
   Texture2D items{};
 
+  Texture2D forestBg{};
+  Texture2D desertBg{};
+  Texture2D snowBg{};
+  Texture2D caveBg{};
+
   void loadAll(const char *texturePackPath = nullptr);
 
 private:

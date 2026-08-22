@@ -56,6 +56,7 @@ void Game::spawnDroppedItem(Vector2 position, std::uint16_t type) {
 bool Game::init() {
   Audio::init();
   m_AssetManager.loadAll();
+  loadSettings();
 
   WorldGenerator worldGenerator{m_GameMap, m_WorldSettings, m_Seed};
   worldGenerator.generate();
@@ -80,6 +81,7 @@ bool Game::update() {
   }
 
   Audio::update();
+  updateSettings();
   updateEnemySpawning(dt);
   updatePlayer(dt);
   updateCamera();
@@ -273,6 +275,7 @@ void Game::updateWorldEditing() {
               static_cast<float>(hoveredCell.y) + 0.5f,
           };
           spawnDroppedItem(blockCenter, hoveredCell.block->type);
+          Audio::playSound(Audio::BreakBlock);
         }
         *hoveredCell.block = {};
       }
@@ -299,10 +302,12 @@ void Game::updateWorldEditing() {
     if (m_EditMode == EditMode::Blocks) {
       if (hoveredCell.block) {
         hoveredCell.block->type = m_CreativeSelectedBlock;
+        Audio::playSound(Audio::PlaceBlock);
       }
     } else {
       if (hoveredCell.wall) {
         hoveredCell.wall->type = m_CreativeSelectedWall;
+        Audio::playSound(Audio::PlaceBlock);
       }
     }
   }
@@ -341,6 +346,10 @@ void Game::updateStructureSelection() {
 }
 
 void Game::render() {
+  Vector2 mapSize{static_cast<float>(m_GameMap.w),
+                  static_cast<float>(m_GameMap.h)};
+  m_Background.draw(m_AssetManager, m_Camera, mapSize);
+
   BeginMode2D(m_Camera);
 
   Vector2 screenSize{

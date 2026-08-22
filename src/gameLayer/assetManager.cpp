@@ -30,6 +30,11 @@ void AssetManager::loadAll(const char *texturePackPath) {
   load(iceSlime, "iceslime.png");
   load(zombie, "zombie.png");
   load(items, "items.png");
+
+  load(forestBg, "forestBG.png");
+  load(desertBg, "desertBG.png");
+  load(snowBg, "snowBG.png");
+  load(caveBg, "caveBG.png");
 }
 
 void AssetManager::unloadTexture(Texture2D &texture) {

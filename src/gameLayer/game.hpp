@@ -5,6 +5,7 @@
 #include <random>
 
 #include "assetManager.hpp"
+#include "background.hpp"
 #include "entityHolder.hpp"
 #include "gameMap.hpp"
 #include "raylib.h"
@@ -40,8 +41,9 @@ private:
 private:
   enum class EditMode { Blocks, Walls };
 
-  GameMap m_GameMap;
-  Camera2D m_Camera;
+  GameMap m_GameMap{};
+  Camera2D m_Camera{};
+  Background m_Background{};
   WorldSettings m_WorldSettings{};
   std::ranlux24_base m_Rng{std::random_device{}()};
   std::uint32_t m_Seed{1234};
