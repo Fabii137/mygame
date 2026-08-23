@@ -84,6 +84,7 @@ bool Game::update() {
   updateAudio(dt);
   updateSettings();
   updateEnemySpawning(dt);
+  Rectangle shrinkUV(Rectangle rect);
   updatePlayer(dt);
   updateCamera();
   updateEntities(dt);
@@ -613,15 +614,6 @@ void Game::renderImGuiWindows() {
   ImGui::SliderFloat("Master Volume", &getSettings().masterVolume, 0.f, 1.f);
   ImGui::SliderFloat("Sounds Volume", &getSettings().soundsVolume, 0.f, 1.f);
   ImGui::SliderFloat("Music Volume", &getSettings().musicVolume, 0.f, 1.f);
-  if (ImGui::Button("Play Sound")) {
-    Audio::playSound(Audio::PlaceBlock);
-  }
-  if (ImGui::Button("Play Music Forest")) {
-    Audio::playMusic(Audio::MusicForest);
-  }
-  if (ImGui::Button("Play Music Desert")) {
-    Audio::playMusic(Audio::MusicDesert);
-  }
   ImGui::Separator();
 
   ImGui::Text("General");
