@@ -51,8 +51,6 @@ private:
   std::ranlux24_base m_Rng{std::random_device{}()};
   std::uint32_t m_Seed{1234};
 
-  bool m_PlayerGravity{true};
-
   static constexpr float EnemySpawnInterval{3.f};
   static constexpr float EnemySpawnMinDistance{20.f};
   static constexpr float EnemySpawnMaxDistance{50.f};
@@ -61,6 +59,7 @@ private:
   static constexpr std::size_t MaxEnemies{20};
   float m_EnemySpawnTimer{};
 
+  bool m_CreativeMode{};
   EditMode m_EditMode{EditMode::Blocks};
   Block::Type m_CreativeSelectedBlock{Block::Dirt};
   Wall::Type m_CreativeSelectedWall{Wall::DirtWall};

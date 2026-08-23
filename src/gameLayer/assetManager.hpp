@@ -1,7 +1,9 @@
 #pragma once
 
 #include <filesystem>
+#include <unordered_map>
 
+#include "items.hpp"
 #include "raylib.h"
 
 struct AssetManager {
@@ -15,6 +17,12 @@ struct AssetManager {
   Texture2D zombie{};
   Texture2D items{};
 
+  std::unordered_map<int, Texture2D> frontArmor{};
+  std::unordered_map<int, Texture2D> backArmor{};
+  std::unordered_map<int, Texture2D> feetArmor{};
+  std::unordered_map<int, Texture2D> headArmor{};
+
+  // backgrounds
   Texture2D forestMountainsClose{};
   Texture2D forestMountainsFar{};
   Texture2D forestTrees{};
@@ -36,6 +44,11 @@ struct AssetManager {
   Texture2D sunStandalone{};
 
   void loadAll(const char *texturePackPath = nullptr);
+
+  Texture2D getHeadTexture(Item::Type item);
+  Texture2D getBackTexture(Item::Type item);
+  Texture2D getFeetTexture(Item::Type item);
+  Texture2D getFrontTexture(Item::Type item);
 
 private:
   void unloadTexture(Texture2D &texture);

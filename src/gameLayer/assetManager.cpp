@@ -3,6 +3,7 @@
 
 #include "assetManager.hpp"
 
+#include "items.hpp"
 #include "raylib.h"
 
 namespace fs = std::filesystem;
@@ -51,6 +52,83 @@ void AssetManager::loadAll(const char *texturePackPath) {
   load(stars, "backgrounds/sky/stars.png");
   load(sun, "backgrounds/sky/sun.png");
   load(sunStandalone, "backgrounds/sky/sunStandalone.png");
+
+  // player / armor
+  load(feetArmor[0], "body/player_feet.png");
+  load(headArmor[0], "body/player_head.png");
+  load(frontArmor[0], "body/player_front.png");
+  load(backArmor[0], "body/player_back.png");
+
+  load(headArmor[Item::PartyHat], "body/party_hat.png");
+  load(headArmor[Item::SunGlasses], "body/sunglasses.png");
+
+  load(feetArmor[Item::CopperBoots], "body/copper_armour_feet.png");
+  load(headArmor[Item::CopperHelmet], "body/copper_armour_head.png");
+  load(frontArmor[Item::CopperChestPlate], "body/copper_armour_front.png");
+  load(backArmor[Item::CopperChestPlate], "body/copper_armour_back.png");
+
+  load(feetArmor[Item::IronBoots], "body/iron_armour_feet.png");
+  load(headArmor[Item::IronHelmet], "body/iron_armour_head.png");
+  load(frontArmor[Item::IronChestPlate], "body/iron_armour_front.png");
+  load(backArmor[Item::IronChestPlate], "body/iron_armour_back.png");
+
+  load(feetArmor[Item::GoldBoots], "body/gold_armour_feet.png");
+  load(headArmor[Item::GoldHelmet], "body/gold_armour_head.png");
+  load(frontArmor[Item::GoldChestPlate], "body/gold_armour_front.png");
+  load(backArmor[Item::GoldChestPlate], "body/gold_armour_back.png");
+
+  load(feetArmor[Item::IceBoots], "body/ice_armour_feet.png");
+  load(headArmor[Item::IceHelmet], "body/ice_armour_head.png");
+  load(frontArmor[Item::IceChestPlate], "body/ice_armour_front.png");
+  load(backArmor[Item::IceChestPlate], "body/ice_armour_back.png");
+}
+
+Texture2D AssetManager::getHeadTexture(Item::Type item) {
+  auto found{headArmor.find(item)};
+  if (found == headArmor.end()) {
+    return headArmor[0];
+  }
+  if (found->second.id == 0) {
+    return headArmor[0];
+  }
+
+  return found->second;
+}
+
+Texture2D AssetManager::getBackTexture(Item::Type item) {
+  auto found{backArmor.find(item)};
+  if (found == backArmor.end()) {
+    return backArmor[0];
+  }
+  if (found->second.id == 0) {
+    return backArmor[0];
+  }
+
+  return found->second;
+}
+
+Texture2D AssetManager::getFeetTexture(Item::Type item) {
+  auto found{feetArmor.find(item)};
+  if (found == feetArmor.end()) {
+    return feetArmor[0];
+  }
+  if (found->second.id == 0) {
+    return feetArmor[0];
+  }
+
+  return found->second;
+}
+
+Texture2D AssetManager::getFrontTexture(Item::Type item) {
+  auto found{frontArmor.find(item)};
+  if (found == frontArmor.end()) {
+    return frontArmor[0];
+  }
+  if (found->second.id == 0) {
+    return frontArmor[0];
+  }
+
+  return found->second;
 }
 
 void AssetManager::unloadTexture(Texture2D &texture) {

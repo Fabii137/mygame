@@ -3,13 +3,31 @@
 #include "physics.hpp"
 #include "raylib.h"
 
-Rectangle getTextureAtlas(int x, int y, int cellSizeX, int cellSizeY) {
-  return {
+Rectangle getTextureAtlas(int x, int y, int cellSizeX, int cellSizeY,
+                          bool flipX) {
+  float sizeX{static_cast<float>(cellSizeX)};
+  if (flipX) {
+    sizeX *= -1.f;
+  }
+  return shrinkUV({
       static_cast<float>(x) * cellSizeX,
       static_cast<float>(y) * cellSizeY,
-      static_cast<float>(cellSizeX),
+      sizeX,
       static_cast<float>(cellSizeY),
-  };
+  });
+}
+
+Rectangle flipTextureAtlasX(Rectangle rect) {
+  rect.width *= -1.f;
+  return rect;
+}
+
+Rectangle shrinkUV(Rectangle rect, float shrink) {
+  rect.width -= shrink;
+  rect.height -= shrink;
+  rect.x += shrink * 0.5f;
+  rect.y += shrink * 0.5f;
+  return rect;
 }
 
 Rectangle getRectangleForEntity(Transform2D transform, float textureW,

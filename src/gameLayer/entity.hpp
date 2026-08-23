@@ -23,6 +23,7 @@ struct EntityUpdateData {
   std::ranlux24_base &rng;
   EntityHolder &entityHolder;
   std::uint64_t ownId{};
+  bool creativeMode{};
 };
 
 class Entity {

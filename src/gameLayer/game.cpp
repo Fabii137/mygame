@@ -163,14 +163,11 @@ void Game::updateAudio(float dt) {
 
 void Game::updatePlayer(float dt) {
   EntityUpdateData updateData{
-      m_Player.position(),
-      m_Rng,
-      m_Entities,
-      0,
+      m_Player.position(), m_Rng, m_Entities, 0, m_CreativeMode,
   };
 
   m_Player.update(dt, updateData);
-  m_Player.updatePhysics(dt, m_GameMap, m_PlayerGravity);
+  m_Player.updatePhysics(dt, m_GameMap, !m_CreativeMode);
 }
 
 void Game::updateEntities(float dt) {
@@ -178,13 +175,11 @@ void Game::updateEntities(float dt) {
 
   for (auto it{m_Entities.entities.begin()}; it != m_Entities.entities.end();) {
     EntityUpdateData updateData{
-        m_Player.position(),
-        m_Rng,
-        m_Entities,
-        it->first,
+        m_Player.position(), m_Rng, m_Entities, it->first, m_CreativeMode,
     };
 
     auto &entity{it->second};
+    // TODO: move somewhere else
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
       if (entity->physics().transform.intersectPoint(mousePosWorld)) {
         entity->takeDamage(1.f);
@@ -574,7 +569,7 @@ void Game::renderImGuiWindows() {
   ImGui::Begin("Game Control");
   ImGui::SliderFloat("Camera Zoom", &m_Camera.zoom, 1, 150);
   ImGui::SliderFloat("Player Speed", &m_Player.speed(), 5, 100);
-  ImGui::Checkbox("Player Gravity", &m_PlayerGravity);
+  ImGui::Checkbox("Creative Mode", &m_CreativeMode);
   if (ImGui::Button("Spawn Random Slime")) {
     int type{getRandomInt(m_Rng, 0, 2)};
     spawnSlime({18, 60}, static_cast<SlimeType>(type));

@@ -5,6 +5,7 @@ struct EntityAnimation {
   int positionY{};
 
   float timer{};
+  bool movingLeft{};
 
   void update(float dt, float frameDuration, int framesCount) {
     timer -= dt;
