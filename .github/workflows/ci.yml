@@ -1,0 +1,113 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        include:
+          - name: Windows x64
+            os: windows-latest
+            artifact: mygame-windows-x64
+            executable: mygame.exe
+
+          - name: Linux x64
+            os: ubuntu-latest
+            artifact: mygame-linux-x64
+            executable: mygame
+
+          - name: macOS x64
+            os: macos-latest
+            artifact: mygame-macos-x64
+            executable: mygame
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+
+          sudo apt-get install -y \
+            ninja-build \
+            libx11-dev \
+            libxrandr-dev \
+            libxi-dev \
+            libxcursor-dev \
+            libxinerama-dev \
+            libgl1-mesa-dev \
+            libwayland-dev \
+            libxkbcommon-dev
+
+      - name: Configure CMake
+        shell: bash
+        run: |
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            cmake \
+              -S . \
+              -B build \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DPRODUCTION_BUILD=ON \
+              -DBUILD_SHARED_LIBS=OFF
+
+          else
+            cmake \
+              -S . \
+              -B build \
+              -G Ninja \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DPRODUCTION_BUILD=ON \
+              -DBUILD_SHARED_LIBS=OFF
+          fi
+
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      - name: Verify build
+        shell: bash
+        run: |
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            test -f "build/Release/${{ matrix.executable }}"
+          else
+            test -f "build/${{ matrix.executable }}"
+          fi
+
+      - name: Package
+        shell: bash
+        run: |
+          mkdir -p dist
+
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            cp "build/Release/${{ matrix.executable }}" "dist/"
+          else
+            cp "build/${{ matrix.executable }}" "dist/"
+          fi
+
+          cp -r resources dist/resources
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: dist/
+          if-no-files-found: error
