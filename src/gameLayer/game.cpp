@@ -84,7 +84,6 @@ bool Game::update() {
   updateAudio(dt);
   updateSettings();
   updateEnemySpawning(dt);
-  Rectangle shrinkUV(Rectangle rect);
   updatePlayer(dt);
   updateCamera();
   updateEntities(dt);
