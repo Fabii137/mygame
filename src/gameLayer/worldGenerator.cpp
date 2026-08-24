@@ -3,7 +3,6 @@
 #include <cstdlib>
 
 #include <algorithm>
-#include <memory>
 #include <optional>
 #include <random>
 #include <string>
@@ -12,7 +11,6 @@
 
 #include "worldGenerator.hpp"
 
-#include "FastNoiseSIMD.h"
 #include "asserts.h"
 #include "blocks.hpp"
 #include "gameMap.hpp"
@@ -21,23 +19,17 @@
 #include "saveMap.hpp"
 #include "structure.hpp"
 
-NoiseData::NoiseData(float* mountain, float* plains, float* blend, float* stone,
-    float* cave1, float* cave2)
-    : mountain(mountain)
-    , plains(plains)
-    , blend(blend)
-    , stone(stone)
-    , cave1(cave1)
-    , cave2(cave2) { }
+#include "FastNoise/FastNoise.h"
 
-NoiseData::~NoiseData() {
-	FastNoiseSIMD::FreeNoiseSet(mountain);
-	FastNoiseSIMD::FreeNoiseSet(plains);
-	FastNoiseSIMD::FreeNoiseSet(blend);
-	FastNoiseSIMD::FreeNoiseSet(stone);
-	FastNoiseSIMD::FreeNoiseSet(cave1);
-	FastNoiseSIMD::FreeNoiseSet(cave2);
-}
+NoiseData::NoiseData(std::vector<float> mountain, std::vector<float> plains,
+    std::vector<float> blend, std::vector<float> stone,
+    std::vector<float> cave1, std::vector<float> cave2)
+    : mountain(std::move(mountain))
+    , plains(std::move(plains))
+    , blend(std::move(blend))
+    , stone(std::move(stone))
+    , cave1(std::move(cave1))
+    , cave2(std::move(cave2)) { }
 
 WorldGenerator::WorldGenerator(
     GameMap& gameMap, const WorldSettings& settings, std::uint32_t seed)
@@ -67,7 +59,7 @@ TerrainData WorldGenerator::generateBaseTerrain(const NoiseData& noiseData) {
 	std::vector<int> surfaceHeights(WIDTH);
 	std::vector<int> stoneHeights(WIDTH);
 
-	for (int x {}; x < WIDTH; x++) {
+	for (int x { }; x < WIDTH; x++) {
 		float mountainHeight {
 			std::lerp(static_cast<float>(m_Settings.mountainHeightStart),
 			    static_cast<float>(m_Settings.mountainHeightEnd),
@@ -88,7 +80,7 @@ TerrainData WorldGenerator::generateBaseTerrain(const NoiseData& noiseData) {
 		surfaceHeights[x] = surfaceHeight;
 		stoneHeights[x] = stoneHeight;
 
-		for (int y {}; y < HEIGHT; y++) {
+		for (int y { }; y < HEIGHT; y++) {
 			Block& block { m_GameMap.getBlockUnsafe(x, y) };
 			if (y < surfaceHeight) {
 				block.type = Block::Air;
@@ -103,10 +95,10 @@ TerrainData WorldGenerator::generateBaseTerrain(const NoiseData& noiseData) {
 
 void WorldGenerator::generateBiomeMap(
     TerrainData& terrainData, std::ranlux24_base& rng) {
-	std::optional<Biome::Type> previous {};
+	std::optional<Biome::Type> previous { };
 
 	auto getRandomBiome = [&]() {
-		Biome::Type type {};
+		Biome::Type type { };
 		do {
 			type = static_cast<Biome::Type>(
 			    getRandomInt(rng, 0, Biome::BIOMES_COUNT - 1));
@@ -115,7 +107,7 @@ void WorldGenerator::generateBiomeMap(
 		return type;
 	};
 
-	int x {};
+	int x { };
 	while (x < WIDTH) {
 		int length { getRandomInt(rng, 100, 250) };
 		int end { std::min(x + length, WIDTH) };
@@ -289,11 +281,12 @@ void WorldGenerator::generateCaves(const NoiseData& noiseData) {
 	auto screenBlend
 	    = [](float a, float b) { return 1.f - (1.f - a) * (1.f - b); };
 
-	auto getCaveNoise
-	    = [](const float* noise, int x, int y) { return noise[y * WIDTH + x]; };
+	auto getCaveNoise = [](const std::vector<float>& noise, int x, int y) {
+		return noise[y * WIDTH + x];
+	};
 
-	for (int x {}; x < WIDTH; x++) {
-		for (int y {}; y < HEIGHT; y++) {
+	for (int x { }; x < WIDTH; x++) {
+		for (int y { }; y < HEIGHT; y++) {
 			if (y <= m_Settings.plainsHeightStart + 20) {
 				continue;
 			}
@@ -316,7 +309,7 @@ void WorldGenerator::generateWorms(std::ranlux24_base& rng) {
 		      float y { start.y };
 		      int changeDirectionTime { getRandomInt(rng, 5, 20) };
 
-		      for (int j {}; j < length; j++) {
+		      for (int j { }; j < length; j++) {
 			      int intRadius { static_cast<int>(std::ceil(radius)) };
 			      for (int dx { -intRadius }; dx < intRadius; dx++) {
 				      for (int dy { -intRadius }; dy < intRadius; dy++) {
@@ -351,7 +344,7 @@ void WorldGenerator::generateWorms(std::ranlux24_base& rng) {
 		      }
 	      };
 
-	for (int i {}; i < 15; i++) {
+	for (int i { }; i < 15; i++) {
 		float x { static_cast<float>(getRandomInt(rng, 10, WIDTH - 10)) };
 		float y { static_cast<float>(
 			  getRandomInt(rng, m_Settings.plainsHeightEnd - 20, HEIGHT - 10)) };
@@ -369,7 +362,7 @@ void WorldGenerator::generateStructures(
     const TerrainData& terrainData, std::ranlux24_base& rng) {
 	for (const Biome& biome : terrainData.biomes) {
 		for (int x { biome.startX }; x < biome.endX; x++) {
-			const StructureSettings* selected {};
+			const StructureSettings* selected { };
 
 			for (const StructureSettings& settings : m_Settings.structures) {
 				if (settings.variants.empty()) {
@@ -395,7 +388,7 @@ void WorldGenerator::generateStructures(
 			};
 
 			// TODO: avoid loading the same file multiple times (preload all files?)
-			Structure structure {};
+			Structure structure { };
 			std::string path {
 				std::string(RESOURCES_PATH) + "structures/" + variant + ".bin",
 			};
@@ -447,7 +440,7 @@ void WorldGenerator::generateOres(
 
 	auto generateVein = [&](const OreSettings& settings, Vector2 spawnPos) {
 		int size { getRandomInt(rng, settings.minVeinSize, settings.maxVeinSize) };
-		for (int j {}; j < size; j++) {
+		for (int j { }; j < size; j++) {
 			int targetX { static_cast<int>(spawnPos.x) };
 			int targetY { static_cast<int>(spawnPos.y) };
 
@@ -466,7 +459,7 @@ void WorldGenerator::generateOres(
 	};
 
 	for (const OreSettings& settings : m_Settings.ores) {
-		std::vector<int> validX {};
+		std::vector<int> validX { };
 
 		for (const Biome& biome : terrainData.biomes) {
 			if (!isBiomeAllowed(settings.biomes, &biome)) {
@@ -483,12 +476,12 @@ void WorldGenerator::generateOres(
 			continue;
 		}
 
-		for (int i {}; i < settings.veinCount; i++) {
-			std::optional<Vector2> spawnPos {};
+		for (int i { }; i < settings.veinCount; i++) {
+			std::optional<Vector2> spawnPos { };
 
 			// retry until spawn position is found
 			constexpr int maxRetries { 100 };
-			for (int i {}; i < maxRetries; i++) {
+			for (int i { }; i < maxRetries; i++) {
 				int x { validX[getRandomInt(rng, 0, validX.size() - 1)] };
 				int y { getRandomInt(rng, settings.minDepth, settings.maxDepth) };
 
@@ -516,42 +509,40 @@ void WorldGenerator::generateOres(
 NoiseData WorldGenerator::generateNoiseData() {
 	auto generateNoise
 	    = [&](const NoiseSettings& noiseSettings, bool twoDimensions = false) {
-		      std::unique_ptr<FastNoiseSIMD> noiseGenerator {
-			      FastNoiseSIMD::NewFastNoiseSIMD()
-		      };
-		      noiseGenerator->SetSeed(m_Seed++);
-		      noiseGenerator->SetNoiseType(FastNoiseSIMD::SimplexFractal);
-		      noiseGenerator->SetFrequency(noiseSettings.frequency);
-		      noiseGenerator->SetFractalOctaves(noiseSettings.octaves);
+		      auto simplex { FastNoise::New<FastNoise::Simplex>() };
+		      auto fractal { FastNoise::New<FastNoise::FractalFBm>() };
 
-		      float* noise {};
+		      fractal->SetSource(simplex);
+		      fractal->SetOctaveCount(noiseSettings.octaves);
+		      simplex->SetScale(1.f / noiseSettings.frequency);
+
+		      std::vector<float> noise { };
+
 		      if (!twoDimensions) {
-			      noise = FastNoiseSIMD::GetEmptySet(WIDTH);
-			      noiseGenerator->FillNoiseSet(noise, 0, 0, 0, WIDTH, 1, 1);
-
-			      // convert from [-1 1] to [0 1]
-			      for (int i {}; i < WIDTH; i++) {
-				      noise[i] = (noise[i] + 1.f) / 2.f;
-			      }
+			      noise.resize(WIDTH);
+			      fractal->GenUniformGrid2D(
+			          noise.data(), 0.f, 0.f, WIDTH, 1, 1.f, 1.f, m_Seed++);
 		      } else {
-			      noise = FastNoiseSIMD::GetEmptySet(WIDTH * HEIGHT);
-			      noiseGenerator->FillNoiseSet(noise, 0, 0, 0, HEIGHT, WIDTH, 1);
-
-			      // convert from [-1 1] to [0 1]
-			      for (int i {}; i < WIDTH * HEIGHT; i++) {
-				      noise[i] = (noise[i] + 1.f) / 2.f;
-			      }
+			      noise.resize(WIDTH * HEIGHT);
+			      fractal->GenUniformGrid2D(
+			          noise.data(), 0.f, 0.f, WIDTH, HEIGHT, 1.f, 1.f, m_Seed++);
 		      }
 
-		      return noise;
+		      // convert from [-1 1] to [0 1]
+		      for (float& value : noise) {
+			      value = (value + 1.f) / 2.f;
+		      }
+
+		      return std::move(noise);
 	      };
 
-	float* mountain { generateNoise(m_Settings.mountain) };
-	float* plains { generateNoise(m_Settings.plains) };
-	float* blend { generateNoise(m_Settings.blend) };
-	float* stone { generateNoise(m_Settings.stone) };
-	float* cave1 { generateNoise(m_Settings.cave1, true) };
-	float* cave2 { generateNoise(m_Settings.cave2, true) };
+	std::vector<float> mountain { generateNoise(m_Settings.mountain) };
+	std::vector<float> plains { generateNoise(m_Settings.plains) };
+	std::vector<float> blend { generateNoise(m_Settings.blend) };
+	std::vector<float> stone { generateNoise(m_Settings.stone) };
+	std::vector<float> cave1 { generateNoise(m_Settings.cave1, true) };
+	std::vector<float> cave2 { generateNoise(m_Settings.cave2, true) };
 
-	return { mountain, plains, blend, stone, cave1, cave2 };
+	return { std::move(mountain), std::move(plains), std::move(blend),
+		std::move(stone), std::move(cave1), std::move(cave2) };
 }

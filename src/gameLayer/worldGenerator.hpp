@@ -9,16 +9,16 @@
 struct GameMap;
 
 struct NoiseData {
-	float* mountain {};
-	float* plains {};
-	float* blend {};
-	float* stone {};
-	float* cave1 {};
-	float* cave2 {};
+	std::vector<float> mountain { };
+	std::vector<float> plains { };
+	std::vector<float> blend { };
+	std::vector<float> stone { };
+	std::vector<float> cave1 { };
+	std::vector<float> cave2 { };
 
-	NoiseData(float* mountain, float* plains, float* blend, float* stone,
-	    float* cave1, float* cave2);
-	~NoiseData();
+	NoiseData(std::vector<float> mountain, std::vector<float> plains,
+	    std::vector<float> blend, std::vector<float> stone,
+	    std::vector<float> cave1, std::vector<float> cave2);
 
 	NoiseData(const NoiseData&) = delete;
 	NoiseData& operator=(const NoiseData&) = delete;
@@ -32,15 +32,15 @@ struct Biome {
 		BIOMES_COUNT,
 	};
 
-	Type type {};
-	int startX {};
-	int endX {};
+	Type type { };
+	int startX { };
+	int endX { };
 };
 
 struct TerrainData {
-	std::vector<int> surfaceHeights {};
-	std::vector<int> stoneHeights {};
-	std::vector<Biome> biomes {};
+	std::vector<int> surfaceHeights { };
+	std::vector<int> stoneHeights { };
+	std::vector<Biome> biomes { };
 };
 
 struct NoiseSettings {
@@ -49,22 +49,22 @@ struct NoiseSettings {
 };
 
 struct OreSettings {
-	Block::Type type {};
-	int veinCount {};
-	int minVeinSize {};
-	int maxVeinSize {};
-	int minDepth {};
-	int maxDepth {};
-	std::vector<Biome::Type> biomes {};
-	std::vector<Block::Type> canReplace {};
+	Block::Type type { };
+	int veinCount { };
+	int minVeinSize { };
+	int maxVeinSize { };
+	int minDepth { };
+	int maxDepth { };
+	std::vector<Biome::Type> biomes { };
+	std::vector<Block::Type> canReplace { };
 };
 
 struct StructureSettings {
 	// names of structure variants
 	std::vector<std::string> variants;
-	std::vector<Biome::Type> biomes {};
+	std::vector<Biome::Type> biomes { };
 
-	float spawnChance {};
+	float spawnChance { };
 };
 
 struct WorldSettings {
