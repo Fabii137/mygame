@@ -7,17 +7,12 @@ set(PRODUCTION_BUILD OFF CACHE BOOL "Make this a production build" FORCE)
 if(MSVC)
   set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Release>:Release>")
   set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-  add_compile_options(/arch:AVX2) # simd optimizations
 elseif(APPLE)
   # no static libstdc++/libgcc on macOS
-  if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
-    # AVX2/FMA don't exist
-  else()
-    add_compile_options(-mavx2 -mfma) # simd optimizations
-  endif()
 else()
-  add_link_options(-static-libstdc++ -static-libgcc)
-  add_compile_options(-mavx2 -mfma) # simd optimizations
+  if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang" AND (MINGW OR CMAKE_SYSTEM_NAME STREQUAL "Linux"))
+    add_link_options(-static-libstdc++ -static-libgcc)
+  endif()
 endif()
 
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build libraries statically" FORCE)

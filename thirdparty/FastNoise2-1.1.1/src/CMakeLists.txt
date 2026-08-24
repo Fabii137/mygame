@@ -8,7 +8,7 @@ CPMAddPackage(
 set(install_targets ${install_targets}
     FastNoise
     FastSIMD
-    FastSIMD_FastNoise  
+    FastSIMD_FastNoise
     PARENT_SCOPE)
 
 install(
@@ -50,11 +50,11 @@ add_library(FastNoise
 
 add_library(FastNoise2 ALIAS FastNoise)
 
-target_include_directories(FastNoise PUBLIC 
+target_include_directories(FastNoise PUBLIC
     $<BUILD_INTERFACE:${FastNoise2_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
-   
+
 target_compile_definitions(FastNoise PRIVATE FASTNOISE_EXPORT)
 target_compile_definitions(FastNoise PUBLIC FASTNOISE2_VERSION="${FastNoise2_VERSION}")
 
@@ -78,7 +78,7 @@ target_link_libraries(FastNoise PUBLIC FastSIMD FastSIMD_FastNoise)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     target_compile_options(FastSIMD_FastNoise PRIVATE /GL- /GS- /wd4251 /permissive- /d2vzeroupper-)
-    
+
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
     if(MSVC)
         target_compile_options(FastSIMD_FastNoise PRIVATE /GS-)
@@ -89,7 +89,7 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}"
     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         target_compile_options(FastSIMD_FastNoise PRIVATE -mno-vzeroupper)
     else()
-        target_compile_options(FastSIMD_FastNoise PRIVATE -mllvm -x86-use-vzeroupper=0)        
+        target_compile_options(FastSIMD_FastNoise PRIVATE -mllvm -x86-use-vzeroupper=0)
     endif()
 endif()
 
@@ -97,6 +97,6 @@ if(NOT FASTNOISE2_STRICT_FP)
     if(MSVC)
         target_compile_options(FastSIMD_FastNoise PRIVATE /fp:fast)
     else()
-        target_compile_options(FastSIMD_FastNoise PRIVATE -ffast-math)   
+        target_compile_options(FastSIMD_FastNoise PRIVATE -ffast-math)
     endif()
 endif()
