@@ -1,27 +1,27 @@
 #pragma once
 
 struct EntityAnimation {
-  int positionX{};
-  int positionY{};
+	int positionX {};
+	int positionY {};
 
-  float timer{};
-  bool movingLeft{};
+	float timer {};
+	bool movingLeft {};
 
-  void update(float dt, float frameDuration, int framesCount) {
-    timer -= dt;
+	void update(float dt, float frameDuration, int framesCount) {
+		timer -= dt;
 
-    if (timer <= 0.f) {
-      timer += frameDuration;
-      positionX++;
-    }
+		if (timer <= 0.f) {
+			timer += frameDuration;
+			positionX++;
+		}
 
-    positionX %= framesCount;
-  }
+		positionX %= framesCount;
+	}
 
-  void setAnimation(int animation) {
-    if (positionY != animation) {
-      positionX = 0;
-      positionY = animation;
-    }
-  }
+	void setAnimation(int animation) {
+		if (positionY != animation) {
+			positionX = 0;
+			positionY = animation;
+		}
+	}
 };

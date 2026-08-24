@@ -3,30 +3,30 @@
 #include <stdio.h>
 #include <string>
 
-
 #ifdef _WIN32
-
 
 #include <Windows.h>
 
-void assertFuncProduction(
-	const char *expression,
-	const char *file_name,
-	unsigned const line_number,
-	const char *comment)
-{
+void assertFuncProduction(const char* expression, const char* file_name,
+    unsigned const line_number, const char* comment) {
 
 	std::string rez = "Assertion failed\n\nFile:\n";
-	rez += file_name; rez += "\n\n";
-	rez += "Line: "; rez += line_number; rez += "\n\n";
-	rez += "Expression: "; rez += expression; rez += "\n\n";
-	rez += "Comment: "; rez += comment; rez += "\n\nPlease report this error to the developer.";
+	rez += file_name;
+	rez += "\n\n";
+	rez += "Line: ";
+	rez += line_number;
+	rez += "\n\n";
+	rez += "Expression: ";
+	rez += expression;
+	rez += "\n\n";
+	rez += "Comment: ";
+	rez += comment;
+	rez += "\n\nPlease report this error to the developer.";
 
-	int const action = MessageBoxA(0, rez.c_str(), "Game Error", MB_TASKMODAL
-		| MB_ICONHAND | MB_OK | MB_SETFOREGROUND);
+	int const action = MessageBoxA(0, rez.c_str(), "Game Error",
+	    MB_TASKMODAL | MB_ICONHAND | MB_OK | MB_SETFOREGROUND);
 
-	switch (action)
-	{
+	switch (action) {
 	case IDOK: // Abort the program:
 	{
 		raise(SIGABRT);
@@ -38,32 +38,32 @@ void assertFuncProduction(
 		// to debug the error and chose not to).
 		_exit(3);
 	}
-	default:
-	{
+	default: {
 		_exit(3);
 	}
 	}
-
 }
 
-void assertFuncInternal(
-	const char *expression,
-	const char *file_name,
-	unsigned const line_number,
-	const char *comment)
-{
+void assertFuncInternal(const char* expression, const char* file_name,
+    unsigned const line_number, const char* comment) {
 
 	std::string rez = "Assertion failed\n\nFile:\n";
-	rez += file_name; rez += "\n\n";
-	rez += "Line: "; rez += line_number; rez += "\n\n";
-	rez += "Expression: "; rez += expression; rez += "\n\n";
-	rez += "Comment: "; rez += comment; rez += "\n\nPress retry to debug.";
+	rez += file_name;
+	rez += "\n\n";
+	rez += "Line: ";
+	rez += line_number;
+	rez += "\n\n";
+	rez += "Expression: ";
+	rez += expression;
+	rez += "\n\n";
+	rez += "Comment: ";
+	rez += comment;
+	rez += "\n\nPress retry to debug.";
 
-	int const action = MessageBoxA(0, rez.c_str(), "Game Error", MB_TASKMODAL
-		| MB_ICONHAND | MB_ABORTRETRYIGNORE | MB_SETFOREGROUND);
+	int const action = MessageBoxA(0, rez.c_str(), "Game Error",
+	    MB_TASKMODAL | MB_ICONHAND | MB_ABORTRETRYIGNORE | MB_SETFOREGROUND);
 
-	switch (action)
-	{
+	switch (action) {
 	case IDABORT: // Abort the program:
 	{
 		raise(SIGABRT);
@@ -89,48 +89,31 @@ void assertFuncInternal(
 		abort();
 	}
 	}
-
 }
 
-
-
-#else //linux or others
+#else // linux or others
 
 #include <cassert>
 #include <iostream>
 #include <signal.h>
 
-
-void assertFuncProduction(
-	const char *expression,
-	const char *file_name,
-	unsigned const line_number,
-	const char *comment)
-{
+void assertFuncProduction(const char* expression, const char* file_name,
+    unsigned const line_number, const char* comment) {
 
 	std::cout << "Assertion failed: " << expression << " file: " << file_name
-		<< " line: " << line_number << "Comment: " << comment;
+	          << " line: " << line_number << "Comment: " << comment;
 	assert(0);
 	raise(SIGABRT);
-
 }
 
-void assertFuncInternal(
-	const char *expression,
-	const char *file_name,
-	unsigned const line_number,
-	const char *comment)
-{
+void assertFuncInternal(const char* expression, const char* file_name,
+    unsigned const line_number, const char* comment) {
 
 	std::cout << "Assertion failed: " << expression << " file: " << file_name
-		<< " line: " << line_number << "Comment: " << comment;
-	__builtin_trap(); //put a break point here
+	          << " line: " << line_number << "Comment: " << comment;
+	__builtin_trap(); // put a break point here
 	assert(0);
 	raise(SIGABRT);
-
 }
-
-
-
 
 #endif

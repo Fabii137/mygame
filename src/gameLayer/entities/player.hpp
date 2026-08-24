@@ -6,29 +6,29 @@
 
 class Player : public Entity {
 public:
-  Player(float speed, float jumpStrength);
+	Player(float speed, float jumpStrength);
 
-  void render(AssetManager &assetManager) const override;
-  bool update(float dt, EntityUpdateData &updateData) override;
+	void render(AssetManager& assetManager) const override;
+	bool update(float dt, EntityUpdateData& updateData) override;
 
-  EntityType getType() const override;
-  float getMaxHealth() const override;
+	EntityType getType() const override;
+	float getMaxHealth() const override;
 
-  float &speed();
-
-private:
-  void renderHeldItem(AssetManager &assetManager, Rectangle aabb) const;
+	float& speed();
 
 private:
-  EntityAnimation m_Animation{};
+	void renderHeldItem(AssetManager& assetManager, Rectangle aabb) const;
 
-  Item::Type m_ArmorHead{Item::PartyHat};
-  Item::Type m_ArmorChest{Item::GoldChestPlate};
-  Item::Type m_ArmorLegs{Item::IceBoots};
-  Item::Type m_HeldItem{Item::GoldSword};
+private:
+	EntityAnimation m_Animation {};
 
-  float m_Speed{};
-  float m_JumpStrength{};
-  bool m_Moving{};
-  bool m_Falling{};
+	Item::Type m_ArmorHead { Item::PartyHat };
+	Item::Type m_ArmorChest { Item::GoldChestPlate };
+	Item::Type m_ArmorLegs { Item::IceBoots };
+	Item::Type m_HeldItem { Item::GoldSword };
+
+	float m_Speed {};
+	float m_JumpStrength {};
+	bool m_Moving {};
+	bool m_Falling {};
 };

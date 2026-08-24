@@ -1,0 +1,12 @@
+BasedOnStyle: WebKit
+IndentWidth: 2
+TabWidth: 2
+AccessModifierOffset: -2
+UseTab: ForIndentation
+BreakBeforeBraces: Attach
+SortIncludes: false
+IncludeBlocks: Preserve
+AlignAfterOpenBracket: DontAlign
+ColumnLimit: 80
+SpaceBeforeCpp11BracedList: true
+SpacesInContainerLiterals: true

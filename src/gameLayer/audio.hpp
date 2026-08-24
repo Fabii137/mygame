@@ -3,23 +3,23 @@
 namespace Audio {
 
 enum Sounds {
-  NoneSound = 0,
-  PlaceBlock,
-  BreakBlock,
-  FinalHit,
-  Hit,
+	NoneSound = 0,
+	PlaceBlock,
+	BreakBlock,
+	FinalHit,
+	Hit,
 
-  SOUNDS_COUNT,
+	SOUNDS_COUNT,
 };
 
 enum Musics {
-  NoneMusic = 0,
-  MusicForest,
-  MusicDesert,
-  MusicSnow,
-  MusicCave,
+	NoneMusic = 0,
+	MusicForest,
+	MusicDesert,
+	MusicSnow,
+	MusicCave,
 
-  MUSIC_COUNT,
+	MUSIC_COUNT,
 };
 
 void init();

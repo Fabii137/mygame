@@ -1,5 +1,5 @@
 #pragma once
 
 namespace Constants {
-constexpr int CellSize{32};
+constexpr int CellSize { 32 };
 }
