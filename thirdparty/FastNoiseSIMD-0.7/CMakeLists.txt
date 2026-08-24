@@ -15,11 +15,13 @@ endforeach()
 
 target_sources(fastNoiseSIMD PRIVATE ${MY_SOURCES})
 
-if (MSVC)
-	set_source_files_properties(${AVX2_SRC} PROPERTIES COMPILE_FLAGS "/arch:AVX2")
-else()
-	set_source_files_properties(${AVX2_SRC} PROPERTIES COMPILE_FLAGS "-mavx2")
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|AMD64|i[3-6]86)$")
+	if (MSVC)
+		set_source_files_properties(${AVX2_SRC} PROPERTIES COMPILE_FLAGS "/arch:AVX2")
+	else()
+		set_source_files_properties(${AVX2_SRC} PROPERTIES COMPILE_FLAGS "-mavx2")
+	endif()
+	target_sources(fastNoiseSIMD PRIVATE ${AVX2_SRC})
 endif()
 
-target_sources(fastNoiseSIMD PRIVATE ${AVX2_SRC})
 target_include_directories(fastNoiseSIMD PUBLIC "FastNoiseSIMD")
