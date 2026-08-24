@@ -42,8 +42,8 @@ jobs:
 
     steps:
       - name: Setup MSVC
-      - if: runner.os == 'Windows'
-      - uses: ilammy/msvc-dev-cmd@v1
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
 
       - name: Checkout
         uses: actions/checkout@v4
