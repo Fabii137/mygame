@@ -4,30 +4,14 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 set(PRODUCTION_BUILD OFF CACHE BOOL "Make this a production build" FORCE)
 
-# only x64/x86 supports AVX2/FMA optimizations
-set(ENABLE_AVX2 OFF CACHE BOOL "Enable AVX2/FMA optimizations for x86/x64 builds")
-
-if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|AMD64|i[3-6]86)$")
-  set(ENABLE_AVX2 ON CACHE BOOL "Enable AVX2/FMA optimizations for x86/x64 builds" FORCE)
-endif()
-
 if(MSVC)
   set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Release>:Release>")
   set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-  if(ENABLE_AVX2)
-    add_compile_options(/arch:AVX2) # simd optimizations
-  endif()
 elseif(APPLE)
   # no static libstdc++/libgcc on macOS
-  if(ENABLE_AVX2)
-    add_compile_options(-mavx2 -mfma) # simd optimizations
-  endif()
 else()
   if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang" AND (MINGW OR CMAKE_SYSTEM_NAME STREQUAL "Linux"))
     add_link_options(-static-libstdc++ -static-libgcc)
-  endif()
-  if(ENABLE_AVX2)
-    add_compile_options(-mavx2 -mfma) # simd optimizations
   endif()
 endif()
 
