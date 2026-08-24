@@ -63,23 +63,13 @@ jobs:
       - name: Configure CMake
         shell: bash
         run: |
-          if [ "${{ runner.os }}" = "Windows" ]; then
-            cmake \
-              -S . \
-              -B build \
-              -DCMAKE_BUILD_TYPE=Release \
-              -DPRODUCTION_BUILD=ON \
-              -DBUILD_SHARED_LIBS=OFF
-
-          else
-            cmake \
-              -S . \
-              -B build \
-              -G Ninja \
-              -DCMAKE_BUILD_TYPE=Release \
-              -DPRODUCTION_BUILD=ON \
-              -DBUILD_SHARED_LIBS=OFF
-          fi
+          cmake \
+            -S . \
+            -B build \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DPRODUCTION_BUILD=ON \
+            -DBUILD_SHARED_LIBS=OFF
 
       - name: Build
         run: cmake --build build --config Release --parallel
@@ -87,23 +77,13 @@ jobs:
       - name: Verify build
         shell: bash
         run: |
-          if [ "${{ runner.os }}" = "Windows" ]; then
-            test -f "build/Release/${{ matrix.executable }}"
-          else
-            test -f "build/${{ matrix.executable }}"
-          fi
+          test -f "build/${{ matrix.executable }}"
 
       - name: Package
         shell: bash
         run: |
           mkdir -p dist
-
-          if [ "${{ runner.os }}" = "Windows" ]; then
-            cp "build/Release/${{ matrix.executable }}" "dist/"
-          else
-            cp "build/${{ matrix.executable }}" "dist/"
-          fi
-
+          cp "build/${{ matrix.executable }}" "dist/"
           cp -r resources dist/resources
 
       - name: Upload artifact

@@ -59,23 +59,13 @@ jobs:
       - name: Configure CMake
         shell: bash
         run: |
-          if [ "${{ runner.os }}" = "Windows" ]; then
-            cmake \
-              -S . \
-              -B build \
-              -DCMAKE_BUILD_TYPE=Release \
-              -DPRODUCTION_BUILD=ON \
-              -DBUILD_SHARED_LIBS=OFF
-
-          else
-            cmake \
-              -S . \
-              -B build \
-              -G Ninja \
-              -DCMAKE_BUILD_TYPE=Release \
-              -DPRODUCTION_BUILD=ON \
-              -DBUILD_SHARED_LIBS=OFF
-          fi
+          cmake \
+            -S . \
+            -B build \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DPRODUCTION_BUILD=ON \
+            -DBUILD_SHARED_LIBS=OFF
 
       - name: Build
         run: cmake --build build --config Release --parallel
@@ -84,15 +74,8 @@ jobs:
         shell: bash
         run: |
           mkdir -p package/mygame
-
-          if [ "${{ runner.os }}" = "Windows" ]; then
-            cp "build/Release/${{ matrix.executable }}" \
-               "package/mygame/"
-          else
-            cp "build/${{ matrix.executable }}" \
-               "package/mygame/"
-          fi
-
+          cp "build/${{ matrix.executable }}" \
+             "package/mygame/"
           cp -r resources package/mygame/resources
 
       - name: Create Windows archive
