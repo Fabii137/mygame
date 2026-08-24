@@ -9,12 +9,12 @@
 struct GameMap;
 
 struct NoiseData {
-	std::vector<float> mountain { };
-	std::vector<float> plains { };
-	std::vector<float> blend { };
-	std::vector<float> stone { };
-	std::vector<float> cave1 { };
-	std::vector<float> cave2 { };
+	std::vector<float> mountain {};
+	std::vector<float> plains {};
+	std::vector<float> blend {};
+	std::vector<float> stone {};
+	std::vector<float> cave1 {};
+	std::vector<float> cave2 {};
 
 	NoiseData(std::vector<float> mountain, std::vector<float> plains,
 	    std::vector<float> blend, std::vector<float> stone,
@@ -32,15 +32,15 @@ struct Biome {
 		BIOMES_COUNT,
 	};
 
-	Type type { };
-	int startX { };
-	int endX { };
+	Type type {};
+	int startX {};
+	int endX {};
 };
 
 struct TerrainData {
-	std::vector<int> surfaceHeights { };
-	std::vector<int> stoneHeights { };
-	std::vector<Biome> biomes { };
+	std::vector<int> surfaceHeights {};
+	std::vector<int> stoneHeights {};
+	std::vector<Biome> biomes {};
 };
 
 struct NoiseSettings {
@@ -49,22 +49,22 @@ struct NoiseSettings {
 };
 
 struct OreSettings {
-	Block::Type type { };
-	int veinCount { };
-	int minVeinSize { };
-	int maxVeinSize { };
-	int minDepth { };
-	int maxDepth { };
-	std::vector<Biome::Type> biomes { };
-	std::vector<Block::Type> canReplace { };
+	Block::Type type {};
+	int veinCount {};
+	int minVeinSize {};
+	int maxVeinSize {};
+	int minDepth {};
+	int maxDepth {};
+	std::vector<Biome::Type> biomes {};
+	std::vector<Block::Type> canReplace {};
 };
 
 struct StructureSettings {
 	// names of structure variants
 	std::vector<std::string> variants;
-	std::vector<Biome::Type> biomes { };
+	std::vector<Biome::Type> biomes {};
 
-	float spawnChance { };
+	float spawnChance {};
 };
 
 struct WorldSettings {
@@ -139,17 +139,17 @@ struct WorldSettings {
 	};
 
 	NoiseSettings mountain {
-		.frequency = 0.003f,
+		.frequency = 0.005f,
 		.octaves = 4,
 	};
 
 	NoiseSettings plains {
-		.frequency = 0.02f,
+		.frequency = 0.015f,
 		.octaves = 1,
 	};
 
 	NoiseSettings blend {
-		.frequency = 0.003f,
+		.frequency = 0.001f,
 		.octaves = 1,
 	};
 
@@ -168,11 +168,11 @@ struct WorldSettings {
 		.octaves = 3,
 	};
 
-	int mountainHeightStart { 80 };
-	int mountainHeightEnd { 130 };
+	int mountainHeightStart { 100 };
+	int mountainHeightEnd { 140 };
 
-	int plainsHeightStart { 140 };
-	int plainsHeightEnd { 170 };
+	int plainsHeightStart { 150 };
+	int plainsHeightEnd { 180 };
 
 	// offset to dirt
 	int stoneOffsetStart { -10 };
