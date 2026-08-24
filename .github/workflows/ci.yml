@@ -34,11 +34,6 @@ jobs:
             artifact: mygame-linux-x64
             executable: mygame
 
-          - name: Linux arm64
-            os: ubuntu-24.04-arm
-            artifact: mygame-linux-arm64
-            executable: mygame
-
           - name: macOS arm64
             os: macos-latest
             artifact: mygame-macos-arm64

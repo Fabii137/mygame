@@ -86,12 +86,10 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}"
         target_compile_options(FastSIMD_FastNoise PRIVATE -fno-stack-protector -Wno-nan-infinity-disabled)
     endif()
 
-    if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|AMD64|i[3-6]86)$")
-        if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-            target_compile_options(FastSIMD_FastNoise PRIVATE -mno-vzeroupper)
-        else()
-            target_compile_options(FastSIMD_FastNoise PRIVATE -mllvm -x86-use-vzeroupper=0)
-        endif()
+    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        target_compile_options(FastSIMD_FastNoise PRIVATE -mno-vzeroupper)
+    else()
+        target_compile_options(FastSIMD_FastNoise PRIVATE -mllvm -x86-use-vzeroupper=0)
     endif()
 endif()
 

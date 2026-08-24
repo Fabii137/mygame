@@ -30,11 +30,6 @@ jobs:
             archive: mygame-linux-x64.tar.gz
             executable: mygame
 
-          - name: Linux arm64
-            os: ubuntu-24.04-arm
-            archive: mygame-linux-arm64.tar.gz
-            executable: mygame
-
           - name: macOS arm64
             os: macos-latest
             archive: mygame-macos-arm64.tar.gz
@@ -121,16 +116,10 @@ jobs:
           name: mygame-windows-x64.zip
           path: release/
 
-      - name: Download Linux artifact
+      - name: Download Linux x64 artifact
         uses: actions/download-artifact@v4
         with:
           name: mygame-linux-x64.tar.gz
-          path: release/
-
-      - name: Download Linux arm64 artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: mygame-linux-arm64.tar.gz
           path: release/
 
       - name: Download macOS arm64 artifact
@@ -146,5 +135,4 @@ jobs:
           files: |
             release/mygame-windows-x64.zip
             release/mygame-linux-x64.tar.gz
-            release/mygame-linux-arm64.tar.gz
             release/mygame-macos-arm64.tar.gz
