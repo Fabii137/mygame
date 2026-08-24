@@ -113,14 +113,14 @@ void PhysicalEntity::resolveConstraints(GameMap& mapData) {
 		return;
 	}
 
-	float GRANULARITY { 0.8f };
-	if (distance <= GRANULARITY) {
+	constexpr float granularity { 0.8f };
+	if (distance <= granularity) {
 		checkCollisionOnce(pos, mapData);
 	} else {
 		Vector2 newPos = lastPosition;
 		Vector2 delta = pos - lastPosition;
 		delta = Vector2Normalize(delta);
-		delta *= GRANULARITY * 0.99f;
+		delta *= granularity * 0.99f;
 
 		bool collision {};
 		do {
@@ -133,7 +133,7 @@ void PhysicalEntity::resolveConstraints(GameMap& mapData) {
 				collision = true;
 				break;
 			}
-		} while (Vector2Length((newPos + delta) - pos) > GRANULARITY);
+		} while (Vector2Length((newPos + delta) - pos) > granularity);
 
 		if (!collision) {
 			checkCollisionOnce(pos, mapData);

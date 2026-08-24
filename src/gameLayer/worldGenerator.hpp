@@ -9,16 +9,16 @@
 struct GameMap;
 
 struct NoiseData {
-	float* mountain {};
-	float* plains {};
-	float* blend {};
-	float* stone {};
-	float* cave1 {};
-	float* cave2 {};
+	std::vector<float> mountain {};
+	std::vector<float> plains {};
+	std::vector<float> blend {};
+	std::vector<float> stone {};
+	std::vector<float> cave1 {};
+	std::vector<float> cave2 {};
 
-	NoiseData(float* mountain, float* plains, float* blend, float* stone,
-	    float* cave1, float* cave2);
-	~NoiseData();
+	NoiseData(std::vector<float> mountain, std::vector<float> plains,
+	    std::vector<float> blend, std::vector<float> stone,
+	    std::vector<float> cave1, std::vector<float> cave2);
 
 	NoiseData(const NoiseData&) = delete;
 	NoiseData& operator=(const NoiseData&) = delete;
@@ -139,17 +139,17 @@ struct WorldSettings {
 	};
 
 	NoiseSettings mountain {
-		.frequency = 0.003f,
+		.frequency = 0.005f,
 		.octaves = 4,
 	};
 
 	NoiseSettings plains {
-		.frequency = 0.02f,
+		.frequency = 0.015f,
 		.octaves = 1,
 	};
 
 	NoiseSettings blend {
-		.frequency = 0.003f,
+		.frequency = 0.001f,
 		.octaves = 1,
 	};
 
@@ -168,11 +168,11 @@ struct WorldSettings {
 		.octaves = 3,
 	};
 
-	int mountainHeightStart { 80 };
-	int mountainHeightEnd { 130 };
+	int mountainHeightStart { 100 };
+	int mountainHeightEnd { 140 };
 
-	int plainsHeightStart { 140 };
-	int plainsHeightEnd { 170 };
+	int plainsHeightStart { 150 };
+	int plainsHeightEnd { 180 };
 
 	// offset to dirt
 	int stoneOffsetStart { -10 };
