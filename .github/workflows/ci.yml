@@ -34,8 +34,9 @@ jobs:
             artifact: mygame-linux-x64
             executable: mygame
 
+          # TODO: support Apple Silicon (AVX2 is required currently) 
           - name: macOS x64
-            os: macos-latest
+            os: macos-13
             artifact: mygame-macos-x64
             executable: mygame
 
