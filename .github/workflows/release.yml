@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - "v*.*.*"
 
   workflow_dispatch:
 
@@ -30,10 +30,14 @@ jobs:
             archive: mygame-linux-x64.tar.gz
             executable: mygame
 
-          # TODO: support Apple Silicon (AVX2 is required currently) 
-          - name: macOS x64
-            os: macos-15-intel
-            archive: mygame-macos-x64.tar.gz
+          - name: Linux arm64
+            os: ubuntu-24.04-arm
+            archive: mygame-linux-arm64.tar.gz
+            executable: mygame
+
+          - name: macOS arm64
+            os: macos-latest
+            archive: mygame-macos-arm64.tar.gz
             executable: mygame
 
     steps:
@@ -123,10 +127,16 @@ jobs:
           name: mygame-linux-x64.tar.gz
           path: release/
 
-      - name: Download macOS artifact
+      - name: Download Linux arm64 artifact
         uses: actions/download-artifact@v4
         with:
-          name: mygame-macos-x64.tar.gz
+          name: mygame-linux-arm64.tar.gz
+          path: release/
+
+      - name: Download macOS arm64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: mygame-macos-arm64.tar.gz
           path: release/
 
       - name: Create GitHub Release
@@ -136,4 +146,5 @@ jobs:
           files: |
             release/mygame-windows-x64.zip
             release/mygame-linux-x64.tar.gz
-            release/mygame-macos-x64.tar.gz
+            release/mygame-linux-arm64.tar.gz
+            release/mygame-macos-arm64.tar.gz
