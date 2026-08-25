@@ -1,30 +1,24 @@
 Checks: "-*,readability-identifier-naming"
 
 CheckOptions:
-  # Functions → camelCase
   - key: readability-identifier-naming.FunctionCase
     value: camelBack
 
-  # Local variables → camelCase
   - key: readability-identifier-naming.VariableCase
     value: camelBack
 
-  # PRIVATE members → m_PascalCase
   - key: readability-identifier-naming.PrivateMemberPrefix
     value: m_
   - key: readability-identifier-naming.PrivateMemberCase
     value: CamelCase
 
-  # PROTECTED members → m_PascalCase
   - key: readability-identifier-naming.ProtectedMemberPrefix
     value: m_
   - key: readability-identifier-naming.ProtectedMemberCase
     value: CamelCase
 
-  # static constexpr (class constants) → ALL_CAPS
   - key: readability-identifier-naming.ClassConstantCase
     value: UPPER_CASE
 
-  # (optional but recommended) global constants → ALL_CAPS
   - key: readability-identifier-naming.GlobalConstantCase
     value: UPPER_CASE
