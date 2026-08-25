@@ -64,6 +64,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup MSVC
+        if: runner.os == 'Windows' && matrix.name == 'Win64-MSVC'
+        uses: ilammy/msvc-dev-cmd@v1
+
       - name: Install Linux dependencies
         if: runner.os == 'Linux'
         run: |
