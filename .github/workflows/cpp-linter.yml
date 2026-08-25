@@ -1,0 +1,65 @@
+name: C/C++ Lint
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  lint:
+    name: clang-format + clang-tidy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            clang \
+            clang-tidy \
+            ninja-build \
+            libx11-dev \
+            libxrandr-dev \
+            libxi-dev \
+            libxcursor-dev \
+            libxinerama-dev \
+            libgl1-mesa-dev \
+            libwayland-dev \
+            libxkbcommon-dev
+
+      - name: Configure CMake with compile_commands
+        run: |
+          cmake \
+            -S . \
+            -B build \
+            -GNinja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_COMPILER=clang \
+            -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DPRODUCTION_BUILD=OFF
+
+      - name: Run clang-format + clang-tidy review
+        id: linter
+        uses: cpp-linter/cpp-linter-action@v2.21.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          style: "file"
+          tidy-checks: ""
+          thread-comments: ${{ github.event_name == 'pull_request' && 'update' }}
+          files-changed-only: true
+
+      - name: Fail if lint issues are found
+        if: steps.linter.outputs.checks-failed > 0
+        run: exit 1
