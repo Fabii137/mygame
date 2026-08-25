@@ -21,6 +21,7 @@ jobs:
         include:
           - os: windows-latest
             name: Win64-MSVC
+            cmake_options: -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
             artifact: mygame-windows-x64-msvc
             archive: mygame-windows-x64-msvc.zip
             executable: mygame.exe
