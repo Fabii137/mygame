@@ -92,7 +92,6 @@ jobs:
           cmake \
             -S . \
             -B build \
-            -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DPRODUCTION_BUILD=ON \
             -DBUILD_SHARED_LIBS=OFF \
