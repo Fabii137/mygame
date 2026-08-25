@@ -20,28 +20,51 @@ jobs:
 
       matrix:
         include:
-          - name: Windows x64
-            os: windows-latest
-            archive: mygame-windows-x64.zip
+          - os: windows-latest
+            name: Win64-MSVC
+            cmake_options: -A x64
+            archive: mygame-windows-x64-msvc.zip
             executable: mygame.exe
+            build_dir: build/Release
 
-          - name: Linux x64
-            os: ubuntu-latest
-            archive: mygame-linux-x64.tar.gz
-            executable: mygame
+          - os: windows-latest
+            name: Win64-ClangCL
+            cmake_options: -A x64 -T ClangCL
+            archive: mygame-windows-x64-clangcl.zip
+            executable: mygame.exe
+            build_dir: build/Release
 
-          - name: macOS arm64
-            os: macos-latest
-            archive: mygame-macos-arm64.tar.gz
+          - os: ubuntu-latest
+            name: Linux64-GCC
+            cmake_options: -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
+            archive: mygame-linux-x64-gcc.tar.gz
             executable: mygame
+            build_dir: build
+
+          - os: ubuntu-latest
+            name: Linux64-Clang
+            cmake_options: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+            archive: mygame-linux-x64-clang.tar.gz
+            executable: mygame
+            build_dir: build
+
+          - os: macos-15-intel
+            name: MacOS64-Clang
+            cmake_options: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+            archive: mygame-macos-x64-clang.tar.gz
+            executable: mygame
+            build_dir: build
+
+          - os: macos-latest
+            name: MacOSARM64-Clang
+            cmake_options: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+            archive: mygame-macos-arm64-clang.tar.gz
+            executable: mygame
+            build_dir: build
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup MSVC
-        if: runner.os == 'Windows'
-        uses: ilammy/msvc-dev-cmd@v1
 
       - name: Install Linux dependencies
         if: runner.os == 'Linux'
@@ -65,10 +88,9 @@ jobs:
           cmake \
             -S . \
             -B build \
-            -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DPRODUCTION_BUILD=ON \
-            -DBUILD_SHARED_LIBS=OFF
+            ${{ matrix.cmake_options }}
 
       - name: Build
         run: cmake --build build --config Release --parallel
@@ -77,7 +99,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p package/mygame/settings
-          cp "build/${{ matrix.executable }}" \
+          cp "${{ matrix.build_dir }}/${{ matrix.executable }}" \
              "package/mygame/"
           cp -r resources package/mygame/resources
           cp -r texturePacks package/mygame/texturePacks
@@ -111,22 +133,40 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download Windows artifact
+      - name: Download Windows x64 MSVC artifact
         uses: actions/download-artifact@v4
         with:
-          name: mygame-windows-x64.zip
+          name: mygame-windows-x64-msvc.zip
           path: release/
 
-      - name: Download Linux x64 artifact
+      - name: Download Windows x64 ClangCL artifact
         uses: actions/download-artifact@v4
         with:
-          name: mygame-linux-x64.tar.gz
+          name: mygame-windows-x64-clangcl.zip
+          path: release/
+
+      - name: Download Linux x64 GCC artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: mygame-linux-x64-gcc.tar.gz
+          path: release/
+
+      - name: Download Linux x64 Clang artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: mygame-linux-x64-clang.tar.gz
+          path: release/
+
+      - name: Download macOS x64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: mygame-macos-x64-clang.tar.gz
           path: release/
 
       - name: Download macOS arm64 artifact
         uses: actions/download-artifact@v4
         with:
-          name: mygame-macos-arm64.tar.gz
+          name: mygame-macos-arm64-clang.tar.gz
           path: release/
 
       - name: Create GitHub Release
@@ -134,6 +174,9 @@ jobs:
         with:
           generate_release_notes: true
           files: |
-            release/mygame-windows-x64.zip
-            release/mygame-linux-x64.tar.gz
-            release/mygame-macos-arm64.tar.gz
+            release/mygame-windows-x64-msvc.zip
+            release/mygame-windows-x64-clangcl.zip
+            release/mygame-linux-x64-gcc.tar.gz
+            release/mygame-linux-x64-clang.tar.gz
+            release/mygame-macos-x64-clang.tar.gz
+            release/mygame-macos-arm64-clang.tar.gz
