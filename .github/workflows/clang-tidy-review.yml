@@ -47,7 +47,7 @@ jobs:
 
       - name: Run clang-tidy review on changed files
         id: review
-        uses: ZedThree/clang-tidy-review@v0.22.0
+        uses: ZedThree/clang-tidy-review@v0.23.1
         with:
           build_dir: build
           config_file: .clang-tidy
@@ -57,4 +57,4 @@ jobs:
           num_comments_as_exitcode: true
 
       - name: Upload clang-tidy review artifacts
-        uses: ZedThree/clang-tidy-review/upload@v0.22.0
+        uses: ZedThree/clang-tidy-review/upload@v0.23.1
