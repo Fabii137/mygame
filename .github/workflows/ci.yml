@@ -26,45 +26,39 @@ jobs:
         include:
           - os: windows-latest
             name: Win64-MSVC
-            cmake_options: -A x64
+            cmake_options:
             artifact: mygame-windows-x64-msvc
             executable: mygame.exe
-            build_dir: build/Release
 
           - os: windows-latest
             name: Win64-ClangCL
-            cmake_options: -A x64 -T ClangCL
+            cmake_options: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
             artifact: mygame-windows-x64-clangcl
             executable: mygame.exe
-            build_dir: build/Release
 
           - os: ubuntu-latest
             name: Linux64-GCC
             cmake_options: -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
             artifact: mygame-linux-x64-gcc
             executable: mygame
-            build_dir: build
 
           - os: ubuntu-latest
             name: Linux64-Clang
             cmake_options: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
             artifact: mygame-linux-x64-clang
             executable: mygame
-            build_dir: build
 
           - os: macos-15-intel
             name: MacOS64-Clang
             cmake_options: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
             artifact: mygame-macos-x64-clang
             executable: mygame
-            build_dir: build
 
           - os: macos-latest
             name: MacOSARM64-Clang
             cmake_options: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
             artifact: mygame-macos-arm64-clang
             executable: mygame
-            build_dir: build
 
     steps:
       - name: Checkout
@@ -92,6 +86,7 @@ jobs:
           cmake \
             -S . \
             -B build \
+            -GNinja \
             -DCMAKE_BUILD_TYPE=Release \
             -DPRODUCTION_BUILD=ON \
             ${{ matrix.cmake_options }}
@@ -102,13 +97,13 @@ jobs:
       - name: Verify build
         shell: bash
         run: |
-          test -f "${{ matrix.build_dir }}/${{ matrix.executable }}"
+          test -f "build/${{ matrix.executable }}"
 
       - name: Package
         shell: bash
         run: |
           mkdir -p dist
-          cp "${{ matrix.build_dir }}/${{ matrix.executable }}" "dist/"
+          cp "build/${{ matrix.executable }}" "dist/"
           cp -r resources dist/resources
 
       - name: Upload artifact
