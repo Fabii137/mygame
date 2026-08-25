@@ -1,7 +1,8 @@
-#include "asserts.h"
 #include <signal.h>
 #include <stdio.h>
 #include <string>
+
+#include "asserts.h"
 
 #ifdef _WIN32
 

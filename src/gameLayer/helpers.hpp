@@ -15,7 +15,7 @@ Rectangle getRectangleForEntity(
 Rectangle shrinkUV(Rectangle rect, float shrink = 0.1f);
 
 void drawTextureAtlas(const Texture2D& texture, int atlasX, int atlasY,
-    Rectangle dest, Color tint = WHITE, int cellSizeX = Constants::CellSize,
-    int cellSizeY = Constants::CellSize);
+    Rectangle dest, Color tint = WHITE, int cellSizeX = Constants::CELL_SIZE,
+    int cellSizeY = Constants::CELL_SIZE);
 void drawTexture(const Texture2D& texture, Rectangle src, Rectangle dest,
     Color tint = WHITE);

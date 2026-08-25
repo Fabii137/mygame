@@ -18,8 +18,8 @@ void Zombie::render(AssetManager& assetManager) const {
 	Color tint { isHit() ? ENTITY_HIT_TINT : WHITE };
 
 	drawTextureAtlas(assetManager.zombie, m_Animation.positionX,
-	    m_Animation.positionY, aabb, tint, Constants::CellSize,
-	    Constants::CellSize * 2);
+	    m_Animation.positionY, aabb, tint, Constants::CELL_SIZE,
+	    Constants::CELL_SIZE * 2);
 }
 
 bool Zombie::update(float dt, EntityUpdateData& updateData) {

@@ -21,12 +21,12 @@ Texture getTextureForItemType(std::uint16_t type, AssetManager& assetManager) {
 Rectangle getTextureCoordsForItemType(std::uint16_t type) {
 	if (isBlock(type) || isWall(type)) {
 		// block or wall
-		return getTextureAtlas(type, 4, Constants::CellSize, Constants::CellSize);
+		return getTextureAtlas(type, 4, Constants::CELL_SIZE, Constants::CELL_SIZE);
 	} else if (isItem(type)) {
 		return getTextureAtlas(
-		    type - Wall::WALLS_END, 0, Constants::CellSize, Constants::CellSize);
+		    type - Wall::WALLS_END, 0, Constants::CELL_SIZE, Constants::CELL_SIZE);
 	}
 
 	permaAssertCommentDevelopment(false, "Unknown type");
-	return getTextureAtlas(0, 0, Constants::CellSize, Constants::CellSize);
+	return getTextureAtlas(0, 0, Constants::CELL_SIZE, Constants::CELL_SIZE);
 }

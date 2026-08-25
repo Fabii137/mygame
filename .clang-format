@@ -8,5 +8,4 @@ SortIncludes: false
 IncludeBlocks: Preserve
 AlignAfterOpenBracket: DontAlign
 ColumnLimit: 80
-SpaceBeforeCpp11BracedList: true
-SpacesInContainerLiterals: true
+SpaceInEmptyBraces: Block

@@ -59,7 +59,7 @@ TerrainData WorldGenerator::generateBaseTerrain(const NoiseData& noiseData) {
 	std::vector<int> surfaceHeights(WIDTH);
 	std::vector<int> stoneHeights(WIDTH);
 
-	for (int x { }; x < WIDTH; x++) {
+	for (int x {}; x < WIDTH; x++) {
 		float mountainHeight {
 			std::lerp(static_cast<float>(m_Settings.mountainHeightStart),
 			    static_cast<float>(m_Settings.mountainHeightEnd),
@@ -80,7 +80,7 @@ TerrainData WorldGenerator::generateBaseTerrain(const NoiseData& noiseData) {
 		surfaceHeights[x] = surfaceHeight;
 		stoneHeights[x] = stoneHeight;
 
-		for (int y { }; y < HEIGHT; y++) {
+		for (int y {}; y < HEIGHT; y++) {
 			Block& block { m_GameMap.getBlockUnsafe(x, y) };
 			if (y < surfaceHeight) {
 				block.type = Block::Air;
@@ -95,10 +95,10 @@ TerrainData WorldGenerator::generateBaseTerrain(const NoiseData& noiseData) {
 
 void WorldGenerator::generateBiomeMap(
     TerrainData& terrainData, std::ranlux24_base& rng) {
-	std::optional<Biome::Type> previous { };
+	std::optional<Biome::Type> previous {};
 
 	auto getRandomBiome = [&]() {
-		Biome::Type type { };
+		Biome::Type type {};
 		do {
 			type = static_cast<Biome::Type>(
 			    getRandomInt(rng, 0, Biome::BIOMES_COUNT - 1));
@@ -107,7 +107,7 @@ void WorldGenerator::generateBiomeMap(
 		return type;
 	};
 
-	int x { };
+	int x {};
 	while (x < WIDTH) {
 		int length { getRandomInt(rng, 100, 250) };
 		int end { std::min(x + length, WIDTH) };
@@ -285,8 +285,8 @@ void WorldGenerator::generateCaves(const NoiseData& noiseData) {
 		return noise[y * WIDTH + x];
 	};
 
-	for (int x { }; x < WIDTH; x++) {
-		for (int y { }; y < HEIGHT; y++) {
+	for (int x {}; x < WIDTH; x++) {
+		for (int y {}; y < HEIGHT; y++) {
 			if (y <= m_Settings.plainsHeightStart + 20) {
 				continue;
 			}
@@ -309,7 +309,7 @@ void WorldGenerator::generateWorms(std::ranlux24_base& rng) {
 		      float y { start.y };
 		      int changeDirectionTime { getRandomInt(rng, 5, 20) };
 
-		      for (int j { }; j < length; j++) {
+		      for (int j {}; j < length; j++) {
 			      int intRadius { static_cast<int>(std::ceil(radius)) };
 			      for (int dx { -intRadius }; dx < intRadius; dx++) {
 				      for (int dy { -intRadius }; dy < intRadius; dy++) {
@@ -344,7 +344,7 @@ void WorldGenerator::generateWorms(std::ranlux24_base& rng) {
 		      }
 	      };
 
-	for (int i { }; i < 15; i++) {
+	for (int i {}; i < 15; i++) {
 		float x { static_cast<float>(getRandomInt(rng, 10, WIDTH - 10)) };
 		float y { static_cast<float>(
 			  getRandomInt(rng, m_Settings.plainsHeightEnd - 20, HEIGHT - 10)) };
@@ -362,7 +362,7 @@ void WorldGenerator::generateStructures(
     const TerrainData& terrainData, std::ranlux24_base& rng) {
 	for (const Biome& biome : terrainData.biomes) {
 		for (int x { biome.startX }; x < biome.endX; x++) {
-			const StructureSettings* selected { };
+			const StructureSettings* selected {};
 
 			for (const StructureSettings& settings : m_Settings.structures) {
 				if (settings.variants.empty()) {
@@ -388,7 +388,7 @@ void WorldGenerator::generateStructures(
 			};
 
 			// TODO: avoid loading the same file multiple times (preload all files?)
-			Structure structure { };
+			Structure structure {};
 			std::string path {
 				std::string(RESOURCES_PATH) + "structures/" + variant + ".bin",
 			};
@@ -440,7 +440,7 @@ void WorldGenerator::generateOres(
 
 	auto generateVein = [&](const OreSettings& settings, Vector2 spawnPos) {
 		int size { getRandomInt(rng, settings.minVeinSize, settings.maxVeinSize) };
-		for (int j { }; j < size; j++) {
+		for (int j {}; j < size; j++) {
 			int targetX { static_cast<int>(spawnPos.x) };
 			int targetY { static_cast<int>(spawnPos.y) };
 
@@ -459,7 +459,7 @@ void WorldGenerator::generateOres(
 	};
 
 	for (const OreSettings& settings : m_Settings.ores) {
-		std::vector<int> validX { };
+		std::vector<int> validX {};
 
 		for (const Biome& biome : terrainData.biomes) {
 			if (!isBiomeAllowed(settings.biomes, &biome)) {
@@ -476,12 +476,12 @@ void WorldGenerator::generateOres(
 			continue;
 		}
 
-		for (int i { }; i < settings.veinCount; i++) {
-			std::optional<Vector2> spawnPos { };
+		for (int i {}; i < settings.veinCount; i++) {
+			std::optional<Vector2> spawnPos {};
 
 			// retry until spawn position is found
 			constexpr int maxRetries { 100 };
-			for (int i { }; i < maxRetries; i++) {
+			for (int i {}; i < maxRetries; i++) {
 				int x { validX[getRandomInt(rng, 0, validX.size() - 1)] };
 				int y { getRandomInt(rng, settings.minDepth, settings.maxDepth) };
 
@@ -516,7 +516,7 @@ NoiseData WorldGenerator::generateNoiseData() {
 		      fractal->SetOctaveCount(noiseSettings.octaves);
 		      simplex->SetScale(1.f / noiseSettings.frequency);
 
-		      std::vector<float> noise { };
+		      std::vector<float> noise {};
 
 		      if (!twoDimensions) {
 			      noise.resize(WIDTH);

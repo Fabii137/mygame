@@ -8,7 +8,6 @@
 #include "walls.hpp"
 
 struct Structure {
-
 	int w {};
 	int h {};
 

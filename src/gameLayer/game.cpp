@@ -630,7 +630,7 @@ void Game::renderImGuiWindows() {
 
 		auto addTexButton = [&](int i, std::function<void(void)> onClick) {
 			auto atlas { getTextureAtlas(
-				  i, 0, Constants::CellSize, Constants::CellSize) };
+				  i, 0, Constants::CELL_SIZE, Constants::CELL_SIZE) };
 			atlas.x /= m_AssetManager.textures.width;
 			atlas.width /= m_AssetManager.textures.width;
 			atlas.y /= m_AssetManager.textures.height;
