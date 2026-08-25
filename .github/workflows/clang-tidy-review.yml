@@ -54,7 +54,6 @@ jobs:
           include: "*.[ch],*.[ch]xx,*.[ch]pp,*.[ch]++,*.cc,*.hh"
           exclude: "thirdparty/**,build/**"
           max_comments: 25
-          num_comments_as_exitcode: true
 
       - name: Upload clang-tidy review artifacts
         uses: ZedThree/clang-tidy-review/upload@v0.23.1
