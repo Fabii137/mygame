@@ -25,7 +25,6 @@ jobs:
             artifact: mygame-windows-x64-msvc
             archive: mygame-windows-x64-msvc.zip
             executable: mygame.exe
-            build_dir: build/Release
 
           - os: windows-latest
             name: Win64-ClangCL
@@ -33,7 +32,6 @@ jobs:
             artifact: mygame-windows-x64-clangcl
             archive: mygame-windows-x64-clangcl.zip
             executable: mygame.exe
-            build_dir: build/Release
 
           - os: ubuntu-latest
             name: Linux64-GCC
@@ -41,7 +39,6 @@ jobs:
             artifact: mygame-linux-x64-gcc
             archive: mygame-linux-x64-gcc.tar.gz
             executable: mygame
-            build_dir: build
 
           - os: ubuntu-latest
             name: Linux64-Clang
@@ -49,7 +46,6 @@ jobs:
             artifact: mygame-linux-x64-clang
             archive: mygame-linux-x64-clang.tar.gz
             executable: mygame
-            build_dir: build
 
           - os: macos-15-intel
             name: MacOS64-Clang
@@ -57,7 +53,6 @@ jobs:
             artifact: mygame-macos-x64-clang
             archive: mygame-macos-x64-clang.tar.gz
             executable: mygame
-            build_dir: build
 
           - os: macos-latest
             name: MacOSARM64-Clang
@@ -65,7 +60,6 @@ jobs:
             artifact: mygame-macos-arm64-clang
             archive: mygame-macos-arm64-clang.tar.gz
             executable: mygame
-            build_dir: build
 
     steps:
       - name: Checkout
@@ -108,13 +102,13 @@ jobs:
       - name: Verify build
         shell: bash
         run: |
-          test -f "${{ matrix.build_dir }}/${{ matrix.executable }}"
+          test -f "build/${{ matrix.executable }}"
 
       - name: Package
         shell: bash
         run: |
           mkdir -p dist
-          cp "${{ matrix.build_dir }}/${{ matrix.executable }}" "dist/"
+          cp "build/${{ matrix.executable }}" "dist/"
           cp -r resources dist/resources
           cp -r texturePacks dist/texturePacks
 
