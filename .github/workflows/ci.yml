@@ -25,13 +25,6 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            name: Win32-MSVC
-            cmake_options: -A Win32
-            artifact: mygame-windows-x86-msvc
-            executable: mygame.exe
-            build_dir: build/Release
-
-          - os: windows-latest
             name: Win64-MSVC
             cmake_options: -A x64
             artifact: mygame-windows-x64-msvc
