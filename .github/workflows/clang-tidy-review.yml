@@ -1,0 +1,60 @@
+name: clang-tidy-review
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            clang \
+            clang-tidy \
+            ninja-build \
+            libx11-dev \
+            libxrandr-dev \
+            libxi-dev \
+            libxcursor-dev \
+            libxinerama-dev \
+            libgl1-mesa-dev \
+            libwayland-dev \
+            libxkbcommon-dev
+
+      - name: Configure CMake with compile_commands
+        run: |
+          cmake \
+            -S . \
+            -B build \
+            -GNinja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_COMPILER=clang \
+            -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DPRODUCTION_BUILD=OFF
+
+      - name: Run clang-tidy review on changed files
+        id: review
+        uses: ZedThree/clang-tidy-review@v0.22.0
+        with:
+          build_dir: build
+          config_file: .clang-tidy
+          include: "*.[ch],*.[ch]xx,*.[ch]pp,*.[ch]++,*.cc,*.hh"
+          exclude: "thirdparty/**,build/**"
+          max_comments: 25
+          num_comments_as_exitcode: true
+
+      - name: Upload clang-tidy review artifacts
+        uses: ZedThree/clang-tidy-review/upload@v0.22.0
