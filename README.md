@@ -18,6 +18,10 @@ A small sandbox terrain game built in C++ with raylib and ImGui.
 - Middle click: pick block type in creative mode
 - F10: toggle debug/creative tools
 
+## Releases
+
+[Latest Release](https://github.com/Fabii137/mygame/releases)
+
 ## Run it
 
 From the project root:
