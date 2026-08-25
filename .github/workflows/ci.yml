@@ -24,44 +24,53 @@ jobs:
 
       matrix:
         include:
-          - name: Windows x64
-            os: windows-latest
-            artifact: mygame-windows-x64
-            executable: mygame.exe
+          - os: windows-latest
+            name: Win32-MSVC
+            cmake_options: -A Win32
 
-          - name: Linux x64
-            os: ubuntu-latest
-            artifact: mygame-linux-x64
-            executable: mygame
+          - os: windows-latest
+            name: Win64-MSVC
+            cmake_options: -A x64
 
-          - name: macOS arm64
-            os: macos-latest
-            artifact: mygame-macos-arm64
-            executable: mygame
+          - os: windows-latest
+            name: Win64-ClangCL
+            cmake_options: -A x64 -T ClangCL
+
+          - os: ubuntu-latest
+            name: Linux64-GCC
+            cmake_options: -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
+
+          - os: ubuntu-latest
+            name: Linux64-Clang
+            cmake_options: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+
+          - os: macos-15-intel
+            name: MacOS64-Clang
+            cmake_options: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+
+          - os: macos-latest
+            name: MacOSARM64-Clang
+            cmake_options: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
 
     steps:
-      - name: Setup MSVC
-        if: runner.os == 'Windows'
-        uses: ilammy/msvc-dev-cmd@v1
-
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Linux dependencies
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-
-          sudo apt-get install -y \
-            ninja-build \
-            libx11-dev \
-            libxrandr-dev \
-            libxi-dev \
-            libxcursor-dev \
-            libxinerama-dev \
-            libgl1-mesa-dev \
-            libwayland-dev \
-            libxkbcommon-dev
+      # - name: Install Linux dependencies
+      #   if: runner.os == 'Linux'
+      #   run: |
+      #     sudo apt-get update
+      #
+      #     sudo apt-get install -y \
+      #       ninja-build \
+      #       libx11-dev \
+      #       libxrandr-dev \
+      #       libxi-dev \
+      #       libxcursor-dev \
+      #       libxinerama-dev \
+      #       libgl1-mesa-dev \
+      #       libwayland-dev \
+      #       libxkbcommon-dev
 
       - name: Configure CMake
         shell: bash
