@@ -27,30 +27,44 @@ jobs:
           - os: windows-latest
             name: Win32-MSVC
             cmake_options: -A Win32
+            artifact: mygame-windows-x86-msvc
+            executable: mygame.exe
 
           - os: windows-latest
             name: Win64-MSVC
             cmake_options: -A x64
+            artifact: mygame-windows-x64-msvc
+            executable: mygame.exe
 
           - os: windows-latest
             name: Win64-ClangCL
             cmake_options: -A x64 -T ClangCL
+            artifact: mygame-windows-x64-clangcl
+            executable: mygame.exe
 
           - os: ubuntu-latest
             name: Linux64-GCC
             cmake_options: -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
+            artifact: mygame-linux-x64-gcc
+            executable: mygame
 
           - os: ubuntu-latest
             name: Linux64-Clang
             cmake_options: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+            artifact: mygame-linux-x64-clang
+            executable: mygame
 
           - os: macos-15-intel
             name: MacOS64-Clang
             cmake_options: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+            artifact: mygame-macos-x64-clang
+            executable: mygame
 
           - os: macos-latest
             name: MacOSARM64-Clang
             cmake_options: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+            artifact: mygame-macos-arm64-clang
+            executable: mygame
 
     steps:
       - name: Checkout
@@ -81,7 +95,8 @@ jobs:
             -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DPRODUCTION_BUILD=ON \
-            -DBUILD_SHARED_LIBS=OFF
+            -DBUILD_SHARED_LIBS=OFF \
+            ${{ matrix.cmake_options }}
 
       - name: Build
         run: cmake --build build --config Release --parallel
