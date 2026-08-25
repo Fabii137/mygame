@@ -56,21 +56,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # - name: Install Linux dependencies
-      #   if: runner.os == 'Linux'
-      #   run: |
-      #     sudo apt-get update
-      #
-      #     sudo apt-get install -y \
-      #       ninja-build \
-      #       libx11-dev \
-      #       libxrandr-dev \
-      #       libxi-dev \
-      #       libxcursor-dev \
-      #       libxinerama-dev \
-      #       libgl1-mesa-dev \
-      #       libwayland-dev \
-      #       libxkbcommon-dev
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+
+          sudo apt-get install -y \
+            ninja-build \
+            libx11-dev \
+            libxrandr-dev \
+            libxi-dev \
+            libxcursor-dev \
+            libxinerama-dev \
+            libgl1-mesa-dev \
+            libwayland-dev \
+            libxkbcommon-dev
 
       - name: Configure CMake
         shell: bash
