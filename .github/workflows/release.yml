@@ -76,10 +76,11 @@ jobs:
       - name: Prepare package
         shell: bash
         run: |
-          mkdir -p package/mygame
+          mkdir -p package/mygame/settings
           cp "build/${{ matrix.executable }}" \
              "package/mygame/"
           cp -r resources package/mygame/resources
+          cp -r texturePacks package/mygame/texturePacks
 
       - name: Create Windows archive
         if: runner.os == 'Windows'

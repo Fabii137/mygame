@@ -8,6 +8,8 @@ int main() {
 	SetTraceLogLevel(LOG_NONE);
 #endif
 
+	ChangeDirectory(GetApplicationDirectory());
+
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	InitWindow(800, 450, "mygame");
 	SetExitKey(KEY_NULL);
