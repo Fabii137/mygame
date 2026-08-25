@@ -24,26 +24,49 @@ jobs:
 
       matrix:
         include:
-          - name: Windows x64
-            os: windows-latest
-            artifact: mygame-windows-x64
+          - os: windows-latest
+            name: Win64-MSVC
+            cmake_options: -A x64
+            artifact: mygame-windows-x64-msvc
             executable: mygame.exe
+            build_dir: build/Release
 
-          - name: Linux x64
-            os: ubuntu-latest
-            artifact: mygame-linux-x64
-            executable: mygame
+          - os: windows-latest
+            name: Win64-ClangCL
+            cmake_options: -A x64 -T ClangCL
+            artifact: mygame-windows-x64-clangcl
+            executable: mygame.exe
+            build_dir: build/Release
 
-          - name: macOS arm64
-            os: macos-latest
-            artifact: mygame-macos-arm64
+          - os: ubuntu-latest
+            name: Linux64-GCC
+            cmake_options: -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
+            artifact: mygame-linux-x64-gcc
             executable: mygame
+            build_dir: build
+
+          - os: ubuntu-latest
+            name: Linux64-Clang
+            cmake_options: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+            artifact: mygame-linux-x64-clang
+            executable: mygame
+            build_dir: build
+
+          - os: macos-15-intel
+            name: MacOS64-Clang
+            cmake_options: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+            artifact: mygame-macos-x64-clang
+            executable: mygame
+            build_dir: build
+
+          - os: macos-latest
+            name: MacOSARM64-Clang
+            cmake_options: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+            artifact: mygame-macos-arm64-clang
+            executable: mygame
+            build_dir: build
 
     steps:
-      - name: Setup MSVC
-        if: runner.os == 'Windows'
-        uses: ilammy/msvc-dev-cmd@v1
-
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -69,10 +92,9 @@ jobs:
           cmake \
             -S . \
             -B build \
-            -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DPRODUCTION_BUILD=ON \
-            -DBUILD_SHARED_LIBS=OFF
+            ${{ matrix.cmake_options }}
 
       - name: Build
         run: cmake --build build --config Release --parallel
@@ -80,13 +102,13 @@ jobs:
       - name: Verify build
         shell: bash
         run: |
-          test -f "build/${{ matrix.executable }}"
+          test -f "${{ matrix.build_dir }}/${{ matrix.executable }}"
 
       - name: Package
         shell: bash
         run: |
           mkdir -p dist
-          cp "build/${{ matrix.executable }}" "dist/"
+          cp "${{ matrix.build_dir }}/${{ matrix.executable }}" "dist/"
           cp -r resources dist/resources
 
       - name: Upload artifact

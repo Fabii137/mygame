@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 3.16)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
-set(PRODUCTION_BUILD OFF CACHE BOOL "Make this a production build" FORCE)
+if(NOT DEFINED PRODUCTION_BUILD)
+  set(PRODUCTION_BUILD OFF CACHE BOOL "Make this a production build")
+endif()
 
 if(MSVC)
   set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Release>:Release>")
