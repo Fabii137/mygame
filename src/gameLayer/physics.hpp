@@ -7,15 +7,15 @@ struct Transform2D {
 	float w {};
 	float h {};
 
-	Vector2 getCenter() const;
-	Vector2 getTop() const;
-	Vector2 getBottom() const;
-	Vector2 getLeft() const;
-	Vector2 getRight() const;
-	Vector2 getTopLeft() const;
-	Vector2 getTopRight() const;
-	Vector2 getBottomLeft() const;
-	Vector2 getBottomRight() const;
+	Vector2 center() const;
+	Vector2 top() const;
+	Vector2 bottom() const;
+	Vector2 left() const;
+	Vector2 right() const;
+	Vector2 topLeft() const;
+	Vector2 topRight() const;
+	Vector2 bottomLeft() const;
+	Vector2 bottomRight() const;
 
 	Rectangle getAABB() const;
 

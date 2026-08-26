@@ -81,7 +81,7 @@ TerrainData WorldGenerator::generateBaseTerrain(const NoiseData& noiseData) {
 		stoneHeights[x] = stoneHeight;
 
 		for (int y {}; y < HEIGHT; y++) {
-			Block& block { m_GameMap.getBlockUnsafe(x, y) };
+			Block& block { m_GameMap.blockUnsafe(x, y) };
 			if (y < surfaceHeight) {
 				block.type = Block::Air;
 			} else {
@@ -149,7 +149,7 @@ bool WorldGenerator::isBiomeAllowed(
 }
 
 bool WorldGenerator::isValidSurfaceBlock(const Biome& biome, int x, int y) {
-	const Block* block { m_GameMap.getBlockSafe(x, y) };
+	const Block* block { m_GameMap.blockSafe(x, y) };
 	if (!block) {
 		return false;
 	}
@@ -207,8 +207,8 @@ void WorldGenerator::generateDesertColumn(
 	int stoneY { static_cast<int>(stoneStart + desertDistance * stoneDepth) };
 
 	for (int y { surfaceHeight }; y < HEIGHT; y++) {
-		Block& block { m_GameMap.getBlockUnsafe(x, y) };
-		Wall& wall { m_GameMap.getWallUnsafe(x, y) };
+		Block& block { m_GameMap.blockUnsafe(x, y) };
+		Wall& wall { m_GameMap.wallUnsafe(x, y) };
 
 		if (y >= stoneY) {
 			block.type = Block::Stone;
@@ -228,8 +228,8 @@ void WorldGenerator::generateForestColumn(
 	int stoneHeight { terrainData.stoneHeights[x] };
 
 	for (int y { surfaceHeight }; y < HEIGHT; y++) {
-		Block& block { m_GameMap.getBlockUnsafe(x, y) };
-		Wall& wall { m_GameMap.getWallUnsafe(x, y) };
+		Block& block { m_GameMap.blockUnsafe(x, y) };
+		Wall& wall { m_GameMap.wallUnsafe(x, y) };
 
 		if (y > stoneHeight) {
 			block.type = Block::Stone;
@@ -262,8 +262,8 @@ void WorldGenerator::generateSnowColumn(
 	int stoneY { static_cast<int>(stoneStart + snowDistance * stoneDepth) };
 
 	for (int y { surfaceHeight }; y < HEIGHT; y++) {
-		Block& block { m_GameMap.getBlockUnsafe(x, y) };
-		Wall& wall { m_GameMap.getWallUnsafe(x, y) };
+		Block& block { m_GameMap.blockUnsafe(x, y) };
+		Wall& wall { m_GameMap.wallUnsafe(x, y) };
 
 		if (y >= stoneY) {
 			block.type = Block::Stone;
@@ -296,7 +296,7 @@ void WorldGenerator::generateCaves(const NoiseData& noiseData) {
 			float caveValue { screenBlend(cave1, cave2) };
 
 			if (caveValue > m_Settings.minCaveNoise) {
-				m_GameMap.getBlockUnsafe(x, y).type = Block::Air;
+				m_GameMap.blockUnsafe(x, y).type = Block::Air;
 			}
 		}
 	}
@@ -317,7 +317,7 @@ void WorldGenerator::generateWorms(std::ranlux24_base& rng) {
 					      if (distSqr <= radius * radius) {
 						      int targetX { static_cast<int>(x + dx) };
 						      int targetY { static_cast<int>(y + dy) };
-						      Block* block { m_GameMap.getBlockSafe(targetX, targetY) };
+						      Block* block { m_GameMap.blockSafe(targetX, targetY) };
 						      if (block) {
 							      block->type = Block::Air;
 						      }
@@ -427,7 +427,7 @@ void WorldGenerator::generateOres(
 			return false;
 		}
 
-		Block* block { m_GameMap.getBlockSafe(x, y) };
+		Block* block { m_GameMap.blockSafe(x, y) };
 		if (!block) {
 			return false;
 		}
@@ -450,7 +450,7 @@ void WorldGenerator::generateOres(
 			}
 
 			if (isValidOreBlock(settings, targetX, targetY)) {
-				m_GameMap.getBlockUnsafe(targetX, targetY).type = settings.type;
+				m_GameMap.blockUnsafe(targetX, targetY).type = settings.type;
 			}
 
 			spawnPos.x += getRandomFloat(rng, -1.f, 1.f);

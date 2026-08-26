@@ -8,29 +8,29 @@
 #include "gameMap.hpp"
 #include "raymath.h"
 
-Vector2 Transform2D::getCenter() const { return { pos.x, pos.y }; }
+Vector2 Transform2D::center() const { return { pos.x, pos.y }; }
 
-Vector2 Transform2D::getTop() const { return { pos.x, pos.y - h * 0.5f }; }
+Vector2 Transform2D::top() const { return { pos.x, pos.y - h * 0.5f }; }
 
-Vector2 Transform2D::getBottom() const { return { pos.x, pos.y + h * 0.5f }; }
+Vector2 Transform2D::bottom() const { return { pos.x, pos.y + h * 0.5f }; }
 
-Vector2 Transform2D::getLeft() const { return { pos.x - w * 0.5f, pos.y }; }
+Vector2 Transform2D::left() const { return { pos.x - w * 0.5f, pos.y }; }
 
-Vector2 Transform2D::getRight() const { return { pos.x + w * 0.5f, pos.y }; }
+Vector2 Transform2D::right() const { return { pos.x + w * 0.5f, pos.y }; }
 
-Vector2 Transform2D::getTopLeft() const {
+Vector2 Transform2D::topLeft() const {
 	return { pos.x - w * 0.5f, pos.y - h * 0.5f };
 }
 
-Vector2 Transform2D::getTopRight() const {
+Vector2 Transform2D::topRight() const {
 	return { pos.x + w * 0.5f, pos.y - h * 0.5f };
 }
 
-Vector2 Transform2D::getBottomLeft() const {
+Vector2 Transform2D::bottomLeft() const {
 	return { pos.x - w * 0.5f, pos.y + h * 0.5f };
 }
 
-Vector2 Transform2D::getBottomRight() const {
+Vector2 Transform2D::bottomRight() const {
 	return { pos.x + w * 0.5f, pos.y + h * 0.5f };
 }
 
@@ -193,7 +193,7 @@ Vector2 PhysicalEntity::performCollisionOnOneAxis(
 
 	for (int y { minY }; y < maxY; y++) {
 		for (int x { minX }; x < maxX; x++) {
-			if (mapData.getBlockUnsafe(x, y).isCollidable()) {
+			if (mapData.blockUnsafe(x, y).isCollidable()) {
 				Transform2D entity {
 					.pos = pos,
 					.w = dimensions.x,

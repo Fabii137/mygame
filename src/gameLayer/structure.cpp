@@ -11,7 +11,7 @@ void Structure::create(int w, int h) {
 	wallData.resize(w * h);
 }
 
-Block& Structure::getBlockUnsafe(int x, int y) {
+Block& Structure::blockUnsafe(int x, int y) {
 	permaAssertCommentDevelopment(
 	    mapData.size() == w * h, "Map data not initialized");
 	permaAssertCommentDevelopment(
@@ -20,7 +20,7 @@ Block& Structure::getBlockUnsafe(int x, int y) {
 	return mapData[y * w + x];
 }
 
-Block* Structure::getBlockSafe(int x, int y) {
+Block* Structure::blockSafe(int x, int y) {
 	permaAssertCommentDevelopment(
 	    mapData.size() == w * h, "Map data not initialized");
 
@@ -31,7 +31,7 @@ Block* Structure::getBlockSafe(int x, int y) {
 	return &mapData[y * w + x];
 }
 
-Wall& Structure::getWallUnsafe(int x, int y) {
+Wall& Structure::wallUnsafe(int x, int y) {
 
 	permaAssertCommentDevelopment(
 	    wallData.size() == w * h, "Wall data not initialized");
@@ -41,7 +41,7 @@ Wall& Structure::getWallUnsafe(int x, int y) {
 	return wallData[y * w + x];
 }
 
-Wall* Structure::getWallSafe(int x, int y) {
+Wall* Structure::wallSafe(int x, int y) {
 	permaAssertCommentDevelopment(
 	    wallData.size() == w * h, "Wall data not initialized");
 
@@ -96,8 +96,8 @@ void Structure::copyFromMap(GameMap& map, Vector2 start, Vector2 end) {
 
 	for (int y {}; y < size.y; y++) {
 		for (int x {}; x < size.x; x++) {
-			getBlockUnsafe(x, y) = map.getBlockUnsafe(x + start.x, y + start.y);
-			getWallUnsafe(x, y) = map.getWallUnsafe(x + start.x, y + start.y);
+			blockUnsafe(x, y) = map.blockUnsafe(x + start.x, y + start.y);
+			wallUnsafe(x, y) = map.wallUnsafe(x + start.x, y + start.y);
 		}
 	}
 };
@@ -105,12 +105,12 @@ void Structure::copyFromMap(GameMap& map, Vector2 start, Vector2 end) {
 void Structure::pasteIntoMap(GameMap& map, Vector2 start) {
 	for (int y {}; y < h; y++) {
 		for (int x {}; x < w; x++) {
-			Block* block { map.getBlockSafe(x + start.x, y + start.y) };
-			Wall* wall { map.getWallSafe(x + start.x, y + start.y) };
+			Block* block { map.blockSafe(x + start.x, y + start.y) };
+			Wall* wall { map.wallSafe(x + start.x, y + start.y) };
 
 			if (block) {
-				*block = getBlockUnsafe(x, y);
-				*wall = getWallUnsafe(x, y);
+				*block = blockUnsafe(x, y);
+				*wall = wallUnsafe(x, y);
 			}
 		}
 	}

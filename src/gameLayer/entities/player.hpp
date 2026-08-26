@@ -11,10 +11,11 @@ public:
 	void render(AssetManager& assetManager) const override;
 	bool update(float dt, EntityUpdateData& updateData) override;
 
-	EntityType getType() const override;
-	float getMaxHealth() const override;
+	EntityType type() const override;
+	float maxHealth() const override;
 
 	float& speed();
+	float speed() const;
 
 private:
 	void renderHeldItem(AssetManager& assetManager, Rectangle aabb) const;

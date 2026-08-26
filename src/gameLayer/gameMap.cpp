@@ -12,14 +12,14 @@ bool GameMap::inBounds(Vector2 position) {
 	return position.x >= 0 && position.y >= 0 && position.x < w && position.y < h;
 }
 
-MapCell GameMap::getHoveredCell(Vector2 mousePosWorld) {
+MapCell GameMap::hoveredCell(Vector2 mousePosWorld) {
 	int x { static_cast<int>(mousePosWorld.x) };
 	int y { static_cast<int>(mousePosWorld.y) };
 
-	return { x, y, getBlockSafe(x, y), getWallSafe(x, y) };
+	return { x, y, blockSafe(x, y), wallSafe(x, y) };
 }
 
-Block& GameMap::getBlockUnsafe(int x, int y) {
+Block& GameMap::blockUnsafe(int x, int y) {
 	permaAssertCommentDevelopment(
 	    mapData.size() == w * h, "Map data not initialized");
 	permaAssertCommentDevelopment(
@@ -28,7 +28,7 @@ Block& GameMap::getBlockUnsafe(int x, int y) {
 	return mapData[y * w + x];
 }
 
-Block* GameMap::getBlockSafe(int x, int y) {
+Block* GameMap::blockSafe(int x, int y) {
 	permaAssertCommentDevelopment(
 	    mapData.size() == w * h, "Map data not initialized");
 
@@ -39,7 +39,7 @@ Block* GameMap::getBlockSafe(int x, int y) {
 	return &mapData[y * w + x];
 }
 
-Wall& GameMap::getWallUnsafe(int x, int y) {
+Wall& GameMap::wallUnsafe(int x, int y) {
 
 	permaAssertCommentDevelopment(
 	    wallData.size() == w * h, "Wall data not initialized");
@@ -49,7 +49,7 @@ Wall& GameMap::getWallUnsafe(int x, int y) {
 	return wallData[y * w + x];
 }
 
-Wall* GameMap::getWallSafe(int x, int y) {
+Wall* GameMap::wallSafe(int x, int y) {
 	permaAssertCommentDevelopment(
 	    wallData.size() == w * h, "Wall data not initialized");
 

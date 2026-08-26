@@ -31,7 +31,8 @@ public:
 	virtual ~Entity() = default;
 
 	Vector2& position() { return m_Physics.transform.pos; }
-	float getHealth() const { return m_Health; }
+	const Vector2& position() const { return m_Physics.transform.pos; }
+	float health() const { return m_Health; }
 	PhysicalEntity& physics() { return m_Physics; }
 	float& timeOutsideDespawnRange() { return m_TimeOutsideDespawnRange; }
 
@@ -50,8 +51,8 @@ public:
 	virtual void render(AssetManager& assetManager) const = 0;
 	virtual bool update(float dt, EntityUpdateData& updateData) = 0;
 
-	virtual EntityType getType() const = 0;
-	virtual float getMaxHealth() const = 0;
+	virtual EntityType type() const = 0;
+	virtual float maxHealth() const = 0;
 
 	virtual void updatePhysics(
 	    float dt, GameMap& gameMap, bool applyGravity = true) {

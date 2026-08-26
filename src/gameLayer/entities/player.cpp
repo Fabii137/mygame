@@ -11,7 +11,7 @@ Player::Player(float speed, float jumpStrength)
     , m_JumpStrength(jumpStrength) {
 	m_Physics.transform.w = 0.8f;
 	m_Physics.transform.h = 1.6f;
-	m_Health = getMaxHealth();
+	m_Health = maxHealth();
 }
 
 void Player::render(AssetManager& assetManager) const {
@@ -80,11 +80,13 @@ bool Player::update(float dt, EntityUpdateData& updateData) {
 	return true;
 }
 
-EntityType Player::getType() const { return EntityType::Player; }
+EntityType Player::type() const { return EntityType::Player; }
 
-float Player::getMaxHealth() const { return 10.f; }
+float Player::maxHealth() const { return 10.f; }
 
 float& Player::speed() { return m_Speed; }
+
+float Player::speed() const { return m_Speed; };
 
 void Player::renderHeldItem(AssetManager& assetManager, Rectangle aabb) const {
 	if (!m_HeldItem) {
