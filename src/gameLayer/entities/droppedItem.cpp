@@ -3,7 +3,6 @@
 #include "droppedItem.hpp"
 
 #include "assetManager.hpp"
-#include "blocks.hpp"
 #include "entity.hpp"
 #include "entityHolder.hpp"
 #include "helpers.hpp"
@@ -18,8 +17,9 @@ DroppedItem::DroppedItem(std::uint16_t itemType)
 }
 
 void DroppedItem::render(AssetManager& assetManager) const {
-	Vector2 size { getSize() };
-	Rectangle aabb { getRectangleForEntity(m_Physics.transform, size.x, size.y) };
+	Vector2 itemSize { size() };
+	Rectangle aabb { getRectangleForEntity(
+		  m_Physics.transform, itemSize.x, itemSize.y) };
 
 	Texture2D texture { getTextureForItemType(m_ItemType, assetManager) };
 	Rectangle source { getTextureCoordsForItemType(m_ItemType) };
@@ -28,8 +28,8 @@ void DroppedItem::render(AssetManager& assetManager) const {
 }
 
 bool DroppedItem::update(float dt, EntityUpdateData& updateData) {
-	int maxStackSize { getMaxStackSize(m_ItemType) };
-	if (m_ItemCounter >= maxStackSize) {
+	int stackSizeLimit { maxStackSize() };
+	if (m_ItemCount >= stackSizeLimit) {
 		return true;
 	}
 
@@ -37,26 +37,26 @@ bool DroppedItem::update(float dt, EntityUpdateData& updateData) {
 		if (key == updateData.ownId) {
 			continue;
 		}
-		if (entity->getType() != EntityType::DroppedItem) {
+		if (entity->type() != EntityType::DroppedItem) {
 			continue;
 		}
 
 		DroppedItem* other { static_cast<DroppedItem*>(entity.get()) };
-		if (m_ItemType != other->getItemType()) {
+		if (m_ItemType != other->itemType()) {
 			continue;
 		}
 
 		bool closeEnough {
 			Vector2Distance(position(), other->position()) < 0.7f,
 		};
-		if (!closeEnough || m_ItemCounter > other->getItemCount()) {
+		if (!closeEnough || m_ItemCount > other->itemCount()) {
 			continue;
 		}
 
-		int total { other->getItemCount() + m_ItemCounter };
-		other->setItemCount(std::min(total, maxStackSize));
-		m_ItemCounter = total - other->getItemCount();
-		if (m_ItemCounter == 0) {
+		int total { other->itemCount() + m_ItemCount };
+		other->itemCount() = std::min(total, stackSizeLimit);
+		m_ItemCount = total - other->itemCount();
+		if (m_ItemCount == 0) {
 			// destroy
 			return false;
 		}
@@ -64,24 +64,24 @@ bool DroppedItem::update(float dt, EntityUpdateData& updateData) {
 	return true;
 }
 
-EntityType DroppedItem::getType() const { return EntityType::DroppedItem; }
+EntityType DroppedItem::type() const { return EntityType::DroppedItem; }
 
-int DroppedItem::getMaxStackSize(std::uint16_t itemType) const {
-	if (itemType < Block::BLOCKS_COUNT) {
+int DroppedItem::maxStackSize() const {
+	if (isBlock(m_ItemType) || isWall(m_ItemType)) {
 		return 64;
 	}
 	return 1;
 }
 
-float DroppedItem::getMaxHealth() const { return 1.f; }
+float DroppedItem::maxHealth() const { return 1.f; }
 
-std::uint16_t DroppedItem::getItemType() const { return m_ItemType; }
+std::uint16_t DroppedItem::itemType() const { return m_ItemType; }
 
-int DroppedItem::getItemCount() const { return m_ItemCounter; }
+int& DroppedItem::itemCount() { return m_ItemCount; }
 
-void DroppedItem::setItemCount(int count) { m_ItemCounter = count; }
+int DroppedItem::itemCount() const { return m_ItemCount; }
 
-Vector2 DroppedItem::getSize() const {
+Vector2 DroppedItem::size() const {
 	if (isBlock(m_ItemType) || isWall(m_ItemType)) {
 		return { 1.f, 1.f };
 	}

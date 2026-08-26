@@ -10,7 +10,7 @@ Slime::Slime(SlimeType type)
     : m_Type(type) {
 	m_Physics.transform.w = 0.8f;
 	m_Physics.transform.h = 0.8f;
-	m_Health = getMaxHealth();
+	m_Health = maxHealth();
 }
 
 void Slime::render(AssetManager& assetManager) const {
@@ -90,9 +90,9 @@ bool Slime::update(float dt, EntityUpdateData& updateData) {
 	return true;
 }
 
-EntityType Slime::getType() const { return EntityType::Slime; }
+EntityType Slime::type() const { return EntityType::Slime; }
 
-float Slime::getMaxHealth() const {
+float Slime::maxHealth() const {
 	switch (m_Type) {
 	case SlimeType::Green:
 		return 10.f;
@@ -101,6 +101,8 @@ float Slime::getMaxHealth() const {
 	case SlimeType::Desert:
 		return 30.f;
 	}
+
+	return 0.f;
 }
 
 bool Slime::isEnemy() const { return true; }

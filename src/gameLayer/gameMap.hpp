@@ -26,11 +26,11 @@ struct GameMap {
 
 	bool inBounds(Vector2 position);
 
-	MapCell getHoveredCell(Vector2 mousePosWorld);
+	MapCell hoveredCell(Vector2 mousePosWorld);
 
-	Block& getBlockUnsafe(int x, int y);
-	Block* getBlockSafe(int x, int y);
+	Block& blockUnsafe(int x, int y);
+	Block* blockSafe(int x, int y);
 
-	Wall& getWallUnsafe(int x, int y);
-	Wall* getWallSafe(int x, int y);
+	Wall& wallUnsafe(int x, int y);
+	Wall* wallSafe(int x, int y);
 };

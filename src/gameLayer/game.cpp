@@ -211,11 +211,11 @@ void Game::updateEntities(float dt) {
 		}
 
 		bool shouldKill { !it->second->update(dt, updateData)
-			|| it->second->getHealth() <= 0.f || !inBounds || shouldDespawn };
+			|| it->second->health() <= 0.f || !inBounds || shouldDespawn };
 		if (shouldKill) {
-			if (entity->getType() == EntityType::Slime) {
+			if (entity->type() == EntityType::Slime) {
 				spawnDroppedItem(it->second->position(), Block::GoldBlock);
-			} else if (entity->getType() == EntityType::Zombie) {
+			} else if (entity->type() == EntityType::Zombie) {
 				spawnDroppedItem(it->second->position(), Block::IronBlock);
 			}
 			it = m_Entities.entities.erase(it);
@@ -241,9 +241,9 @@ std::optional<Vector2> Game::findGroundSpawnPosition(float x) {
 		  m_GameMap.h - 2, playerY + static_cast<int>(ENEMY_SPAWN_MAX_DISTANCE)) };
 
 	for (int y { startY }; y <= endY; ++y) {
-		Block* ground { m_GameMap.getBlockSafe(blockX, y) };
-		Block* above { m_GameMap.getBlockSafe(blockX, y - 1) };
-		Block* above2 { m_GameMap.getBlockSafe(blockX, y - 2) };
+		Block* ground { m_GameMap.blockSafe(blockX, y) };
+		Block* above { m_GameMap.blockSafe(blockX, y - 1) };
+		Block* above2 { m_GameMap.blockSafe(blockX, y - 2) };
 
 		if (!ground || !above || !above2) {
 			continue;
@@ -324,7 +324,7 @@ void Game::updateWorldEditing() {
 		return;
 	}
 
-	MapCell hoveredCell { m_GameMap.getHoveredCell(getMousePosWorld()) };
+	MapCell hoveredCell { m_GameMap.hoveredCell(getMousePosWorld()) };
 	if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
 		if (m_EditMode == EditMode::Blocks) {
 			if (hoveredCell.block) {
@@ -377,7 +377,7 @@ void Game::updateStructureSelection() {
 		return;
 	}
 
-	MapCell hoveredCell { m_GameMap.getHoveredCell(getMousePosWorld()) };
+	MapCell hoveredCell { m_GameMap.hoveredCell(getMousePosWorld()) };
 	if (IsKeyPressed(KEY_ONE)) {
 		m_SelectionStart = {
 			static_cast<float>(hoveredCell.x),
@@ -460,8 +460,8 @@ void Game::render() {
 
 	for (int y { startYView }; y <= endYView; y++) {
 		for (int x { startXView }; x <= endXView; x++) {
-			Wall& wall { m_GameMap.getWallUnsafe(x, y) };
-			Block& block { m_GameMap.getBlockUnsafe(x, y) };
+			Wall& wall { m_GameMap.wallUnsafe(x, y) };
+			Block& block { m_GameMap.blockUnsafe(x, y) };
 			Rectangle dest {
 				static_cast<float>(x),
 				static_cast<float>(y),
@@ -485,7 +485,7 @@ void Game::render() {
 		}
 	}
 
-	MapCell hoveredCell { m_GameMap.getHoveredCell(getMousePosWorld()) };
+	MapCell hoveredCell { m_GameMap.hoveredCell(getMousePosWorld()) };
 	// drawTexture(m_AssetManager.frame,
 	//             {0.f, 0.f, static_cast<float>(m_AssetManager.frame.width),
 	//              static_cast<float>(m_AssetManager.frame.height)},
@@ -545,10 +545,10 @@ int Game::getTextureVariant(int x, int y) {
 }
 
 int Game::getTreeAtlasColumn(int x, int y) {
-	const Block* left { m_GameMap.getBlockSafe(x - 1, y) };
-	const Block* right { m_GameMap.getBlockSafe(x + 1, y) };
-	const Block* top { m_GameMap.getBlockSafe(x, y - 1) };
-	const Block* bottom { m_GameMap.getBlockSafe(x, y + 1) };
+	const Block* left { m_GameMap.blockSafe(x - 1, y) };
+	const Block* right { m_GameMap.blockSafe(x + 1, y) };
+	const Block* top { m_GameMap.blockSafe(x, y - 1) };
+	const Block* bottom { m_GameMap.blockSafe(x, y + 1) };
 
 	bool leavesLeft { left && left->type == Block::Leaves };
 	bool leavesRight { right && right->type == Block::Leaves };

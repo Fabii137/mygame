@@ -9,7 +9,7 @@
 Zombie::Zombie() {
 	m_Physics.transform.w = 0.8f;
 	m_Physics.transform.h = 1.6f;
-	m_Health = getMaxHealth();
+	m_Health = maxHealth();
 }
 
 void Zombie::render(AssetManager& assetManager) const {
@@ -81,8 +81,8 @@ bool Zombie::update(float dt, EntityUpdateData& updateData) {
 	return true;
 }
 
-EntityType Zombie::getType() const { return EntityType::Zombie; }
+EntityType Zombie::type() const { return EntityType::Zombie; }
 
-float Zombie::getMaxHealth() const { return 20.f; }
+float Zombie::maxHealth() const { return 20.f; }
 
 bool Zombie::isEnemy() const { return true; }

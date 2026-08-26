@@ -10,8 +10,8 @@ public:
 	void render(AssetManager& assetManager) const override;
 
 	bool update(float dt, EntityUpdateData& updateData) override;
-	EntityType getType() const override;
-	float getMaxHealth() const override;
+	EntityType type() const override;
+	float maxHealth() const override;
 	bool isEnemy() const override;
 
 private:
