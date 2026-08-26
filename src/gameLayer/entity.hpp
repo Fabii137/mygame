@@ -8,6 +8,8 @@
 #include "physics.hpp"
 #include "raylib.h"
 
+#include "nlohmann/json.hpp"
+
 constexpr Color ENTITY_HIT_TINT { 255, 180, 180, 255 };
 constexpr float HIT_TIMER_DURATION { 0.5f };
 constexpr float RED_TIMER_DURATION { 0.5f };
@@ -15,6 +17,8 @@ constexpr float RED_TIMER_DURATION { 0.5f };
 struct GameMap;
 struct EntityHolder;
 struct AssetManager;
+
+using Json = nlohmann::json;
 
 enum class EntityType { Player, Slime, DroppedItem, Zombie };
 
@@ -51,6 +55,8 @@ public:
 	virtual void render(AssetManager& assetManager) const = 0;
 	virtual bool update(float dt, EntityUpdateData& updateData) = 0;
 
+	virtual void setColliderSize() = 0;
+
 	virtual EntityType type() const = 0;
 	virtual float maxHealth() const = 0;
 
@@ -66,10 +72,36 @@ public:
 
 	virtual bool isEnemy() const { return false; }
 
+	virtual Json formatToJson() const = 0;
+	virtual bool loadFromJson(Json& json) = 0;
+
 protected:
 	void updateTimers(float dt) {
 		m_RedTimer = std::max(m_RedTimer - dt, 0.f);
 		m_HitTimer = std::max(m_HitTimer - dt, 0.f);
+	}
+
+	void addEntityCommonToJson(Json& json) const {
+		json["physics"] = m_Physics.formatToJson();
+		json["health"] = m_Health;
+		json["entityType"] = type();
+	}
+
+	bool loadEntityCommonFromJson(Json& json) {
+		if (!json.contains("physics") || !json["physics"].is_object()) {
+			return false;
+		}
+
+		auto physics = json["physics"];
+		if (!m_Physics.loadFromJson(physics)) {
+			return false;
+		}
+
+		if (json.contains("health") && json["health"].is_number()) {
+			m_Health = json["health"];
+		}
+
+		return true;
 	}
 
 	bool isHit() const { return m_RedTimer > 0.f; }

@@ -2,6 +2,8 @@
 
 #include "raylib.h"
 
+#include "nlohmann/json_fwd.hpp"
+
 struct Transform2D {
 	Vector2 pos {};
 	float w {};
@@ -26,6 +28,8 @@ struct Transform2D {
 
 struct GameMap;
 
+using Json = nlohmann::json;
+
 struct PhysicalEntity {
 	Transform2D transform {};
 	Vector2 lastPosition {};
@@ -49,4 +53,7 @@ struct PhysicalEntity {
 	void checkCollisionOnce(Vector2& pos, GameMap& mapData);
 	Vector2 performCollisionOnOneAxis(
 	    GameMap& mapData, Vector2 pos, Vector2 delta);
+
+	Json formatToJson() const;
+	bool loadFromJson(Json json);
 };

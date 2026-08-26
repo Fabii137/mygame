@@ -1,11 +1,42 @@
+#include <cctype>
+#include <cstdint>
+
+#include <algorithm>
 #include <cstddef>
+#include <filesystem>
 #include <fstream>
+#include <memory>
+#include <string>
+#include <system_error>
+#include <type_traits>
 
 #include "saveMap.hpp"
 
 #include "asserts.h"
 #include "blocks.hpp"
+#include "entity.hpp"
+#include "entityHolder.hpp"
+#include "gameMap.hpp"
 #include "walls.hpp"
+
+#include "entities/droppedItem.hpp"
+#include "entities/player.hpp"
+#include "entities/slime.hpp"
+#include "entities/zombie.hpp"
+
+#include "nlohmann/json.hpp"
+
+namespace {
+template <typename T>
+  requires std::is_base_of_v<Entity, T>
+void addEntityFromJson(
+    EntityHolder& entities, std::uint64_t id, Json& entityJson) {
+	T zombie {};
+	if (zombie.loadFromJson(entityJson)) {
+		entities.entities[id] = std::make_unique<T>(zombie);
+	}
+}
+}
 
 struct BlockSaveRepresentation1 {
 	Block::Type type {};
@@ -143,6 +174,173 @@ bool loadMapDataFromFile(std::vector<Block>& blocks, std::vector<Wall>& walls,
 		blocks[i].sanitize();
 		walls[i].sanitize();
 	}
+
+	return true;
+}
+
+using Json = nlohmann::json;
+
+void saveWorld(GameMap& gameMap, EntityHolder& entities, Player& player) {
+	std::error_code error {};
+	std::filesystem::create_directory(RESOURCES_PATH "../saves/", error);
+
+	saveMapDataToFile(gameMap.mapData, gameMap.wallData, gameMap.w, gameMap.h,
+	    RESOURCES_PATH "../saves/map.bin");
+
+	{
+		std::ofstream f { RESOURCES_PATH "../saves/idHolder.txt" };
+		f << entities.idHolder.idCounter;
+	}
+
+	{
+		Json json = player.formatToJson();
+		std::ofstream f { RESOURCES_PATH "../saves/player.txt" };
+		f << json.dump(2);
+	}
+
+	{
+		Json json {};
+		for (const Biome& biome : gameMap.biomes) {
+			json.push_back({
+			    { "type", biome.type },
+			    { "startX", biome.startX },
+			    { "endX", biome.endX },
+			});
+		}
+
+		std::ofstream f { RESOURCES_PATH "../saves/biomes.txt" };
+		f << json.dump(2);
+	}
+
+	{
+		Json json {};
+
+		for (auto& [id, entity] : entities.entities) {
+			json[std::to_string(id)] = entity->formatToJson();
+		}
+
+		std::ofstream f { RESOURCES_PATH "../saves/entities.txt" };
+		f << json.dump(2);
+	}
+}
+
+bool loadWorld(GameMap& gameMap, EntityHolder& entities, Player& player) {
+	GameMap loadedMap {};
+	EntityHolder loadedEntities {};
+	Player loadedPlayer {};
+
+	if (!loadMapDataFromFile(loadedMap.mapData, loadedMap.wallData, loadedMap.w,
+	        loadedMap.h, RESOURCES_PATH "../saves/map.bin")) {
+		return false;
+	}
+
+	{
+		std::ifstream f { RESOURCES_PATH "../saves/biomes.txt" };
+		if (!f || !f.is_open()) {
+			return false;
+		}
+
+		Json json = Json::parse(f, nullptr, false);
+		if (!json.is_array()) {
+			return false;
+		}
+
+		for (const Json& biomeJson : json) {
+			if (!biomeJson.is_object() || !biomeJson.contains("type")
+			    || !biomeJson["type"].is_number() || !biomeJson.contains("startX")
+			    || !biomeJson["startX"].is_number() || !biomeJson.contains("endX")
+			    || !biomeJson["endX"].is_number()) {
+				return false;
+			}
+
+			int type { biomeJson["type"] };
+			int startX { biomeJson["startX"] };
+			int endX { biomeJson["endX"] };
+			if (type < 0 || type >= Biome::BIOMES_COUNT || startX < 0
+			    || startX >= endX || endX > loadedMap.w) {
+				return false;
+			}
+
+			loadedMap.biomes.push_back({
+			    .type = static_cast<Biome::Type>(type),
+			    .startX = startX,
+			    .endX = endX,
+			});
+		}
+	}
+
+	{
+		std::ifstream f { RESOURCES_PATH "../saves/idHolder.txt" };
+		if (!f || !f.is_open()) {
+			return false;
+		}
+		f >> loadedEntities.idHolder.idCounter;
+	}
+
+	{
+		std::ifstream f { RESOURCES_PATH "../saves/player.txt" };
+		if (!f || !f.is_open()) {
+			return false;
+		}
+
+		Json json = Json::parse(f, nullptr, false);
+		if (!json.is_object() || !loadedPlayer.loadFromJson(json)) {
+			return false;
+		}
+	}
+
+	{
+		std::ifstream f { RESOURCES_PATH "../saves/entities.txt" };
+		if (!f || !f.is_open()) {
+			return false;
+		}
+
+		Json json = Json::parse(f, nullptr, false);
+		if (!json.is_object()) {
+			return false;
+		}
+
+		for (auto it { json.begin() }; it != json.end(); ++it) {
+			const std::string& keyStr { it.key() };
+			bool isNumeric { !keyStr.empty()
+				&& std::ranges::all_of(keyStr, ::isdigit) };
+			if (!isNumeric) {
+				continue;
+			}
+
+			std::uint64_t id {};
+			for (char c : keyStr) {
+				id *= 10;
+				id += c - '0';
+			}
+
+			Json& entityJson { it.value() };
+			EntityType type {};
+			if (!entityJson.contains("entityType")
+			    || !entityJson["entityType"].is_number()) {
+				continue;
+			}
+
+			type = entityJson["entityType"];
+			switch (type) {
+			case EntityType::Player:
+				break; // already handled
+			case EntityType::Slime:
+				addEntityFromJson<Slime>(loadedEntities, id, entityJson);
+				break;
+			case EntityType::DroppedItem:
+				addEntityFromJson<DroppedItem>(loadedEntities, id, entityJson);
+				break;
+			case EntityType::Zombie:
+				addEntityFromJson<Zombie>(loadedEntities, id, entityJson);
+				break;
+			}
+		}
+	}
+
+	gameMap = std::move(loadedMap);
+	entities = std::move(loadedEntities);
+	player = std::move(loadedPlayer);
 
 	return true;
 }

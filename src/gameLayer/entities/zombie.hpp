@@ -14,6 +14,11 @@ public:
 	float maxHealth() const override;
 	bool isEnemy() const override;
 
+	void setColliderSize() override;
+
+	Json formatToJson() const override;
+	bool loadFromJson(Json& json) override;
+
 private:
 	enum class State { Idle, Wandering, Chasing, Attack };
 

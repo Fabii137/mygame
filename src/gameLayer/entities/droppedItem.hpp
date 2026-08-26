@@ -6,7 +6,7 @@
 
 class DroppedItem : public Entity {
 public:
-	DroppedItem(std::uint16_t itemType);
+	DroppedItem();
 
 	void render(AssetManager& assetManager) const override;
 	bool update(float dt, EntityUpdateData& updateData) override;
@@ -16,12 +16,18 @@ public:
 	// dropped item can't be damaged
 	void takeDamage(float damage) override { }
 
+	std::uint16_t& itemType();
 	std::uint16_t itemType() const;
 	int& itemCount();
 	int itemCount() const;
 
 	int maxStackSize() const;
 	Vector2 size() const;
+
+	void setColliderSize() override;
+
+	Json formatToJson() const override;
+	bool loadFromJson(Json& json) override;
 
 private:
 	std::uint16_t m_ItemType {};

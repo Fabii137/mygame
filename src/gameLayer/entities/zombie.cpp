@@ -7,8 +7,7 @@
 #include "raymath.h"
 
 Zombie::Zombie() {
-	m_Physics.transform.w = 0.8f;
-	m_Physics.transform.h = 1.6f;
+	setColliderSize();
 	m_Health = maxHealth();
 }
 
@@ -86,3 +85,27 @@ EntityType Zombie::type() const { return EntityType::Zombie; }
 float Zombie::maxHealth() const { return 20.f; }
 
 bool Zombie::isEnemy() const { return true; }
+
+void Zombie::setColliderSize() {
+	m_Physics.transform.w = 0.8f;
+	m_Physics.transform.h = 1.6f;
+}
+
+Json Zombie::formatToJson() const {
+	Json json {};
+	addEntityCommonToJson(json);
+
+	return json;
+}
+
+bool Zombie::loadFromJson(Json& json) {
+	*this = {};
+
+	if (!loadEntityCommonFromJson(json)) {
+		return false;
+	}
+
+	setColliderSize();
+
+	return true;
+}

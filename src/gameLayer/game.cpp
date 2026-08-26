@@ -42,14 +42,16 @@ void Game::spawnZombie(Vector2 position) {
 }
 
 void Game::spawnSlime(Vector2 position, SlimeType type) {
-	Slime slime { type };
+	Slime slime {};
+	slime.slimeType() = type;
 	slime.teleport(position);
 	m_Entities.add(std::move(slime));
 }
 
 void Game::spawnDroppedItem(Vector2 position, std::uint16_t type) {
 	position.x += getRandomFloat(m_Rng, -0.1f, 0.1f);
-	DroppedItem droppedItem { type };
+	DroppedItem droppedItem {};
+	droppedItem.itemType() = type;
 	droppedItem.teleport(position);
 	m_Entities.add(std::move(droppedItem));
 }
@@ -79,6 +81,10 @@ bool Game::update() {
 
 	if (IsKeyPressed(KEY_F10)) {
 		m_ShowImGui = !m_ShowImGui;
+	}
+
+	if (m_Failed) {
+		return false;
 	}
 
 	updateAudio(dt);
@@ -595,6 +601,16 @@ void Game::renderImGuiWindows() {
 		spawnZombie({ 18, 60 });
 	}
 	ImGui::Separator();
+
+	if (ImGui::Button("Save World")) {
+		saveWorld(m_GameMap, m_Entities, m_Player);
+	}
+
+	if (ImGui::Button("Load World")) {
+		if (!loadWorld(m_GameMap, m_Entities, m_Player)) {
+			m_Failed = true;
+		}
+	}
 
 	if (ImGui::Button("Load Texture Pack")) {
 		m_AssetManager.loadAll(RESOURCES_PATH "../texturePacks/hdtextures");
