@@ -100,9 +100,9 @@ float Slime::maxHealth() const {
 		return 20.f;
 	case SlimeType::Desert:
 		return 30.f;
-	default:
-		return 0.f;
 	}
+
+	return 0.f;
 }
 
 bool Slime::isEnemy() const { return true; }

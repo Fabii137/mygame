@@ -15,7 +15,7 @@ Block& Structure::blockUnsafe(int x, int y) {
 	permaAssertCommentDevelopment(
 	    mapData.size() == w * h, "Map data not initialized");
 	permaAssertCommentDevelopment(
-	    x >= 0 && y >= 0 && x < w && y < h, "getBlockUnsafe out of bounds error");
+	    x >= 0 && y >= 0 && x < w && y < h, "blockUnsafe out of bounds error");
 
 	return mapData[y * w + x];
 }
@@ -36,7 +36,7 @@ Wall& Structure::wallUnsafe(int x, int y) {
 	permaAssertCommentDevelopment(
 	    wallData.size() == w * h, "Wall data not initialized");
 	permaAssertCommentDevelopment(
-	    x >= 0 && y >= 0 && x < w && y < h, "getWallUnsafe out of bounds error");
+	    x >= 0 && y >= 0 && x < w && y < h, "wallUnsafe out of bounds error");
 
 	return wallData[y * w + x];
 }

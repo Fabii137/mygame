@@ -13,7 +13,7 @@ public:
 	EntityType type() const override;
 	float maxHealth() const override;
 
-	// dropped item cant be damaged
+	// dropped item can't be damaged
 	void takeDamage(float damage) override { }
 
 	std::uint16_t itemType() const;
