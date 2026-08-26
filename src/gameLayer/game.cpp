@@ -201,13 +201,13 @@ void Game::updateEntities(float dt) {
 
 		bool shouldDespawn { false };
 		if (it->second->isEnemy()) {
-			if (distanceToPlayer >= EnemyDespawnDistance) {
+			if (distanceToPlayer >= ENEMY_DESPAWN_DISTANCE) {
 				it->second->timeOutsideDespawnRange() += dt;
 			} else {
 				it->second->timeOutsideDespawnRange() = 0.f;
 			}
 			shouldDespawn
-			    = it->second->timeOutsideDespawnRange() >= EnemyDespawnDelay;
+			    = it->second->timeOutsideDespawnRange() >= ENEMY_DESPAWN_DELAY;
 		}
 
 		bool shouldKill { !it->second->update(dt, updateData)
@@ -235,9 +235,10 @@ std::optional<Vector2> Game::findGroundSpawnPosition(float x) {
 	}
 
 	int playerY { static_cast<int>(std::floor(m_Player.position().y)) };
-	int startY { std::max(1, playerY - static_cast<int>(EnemySpawnMaxDistance)) };
+	int startY { std::max(
+		  1, playerY - static_cast<int>(ENEMY_SPAWN_MAX_DISTANCE)) };
 	int endY { std::min(
-		  m_GameMap.h - 2, playerY + static_cast<int>(EnemySpawnMaxDistance)) };
+		  m_GameMap.h - 2, playerY + static_cast<int>(ENEMY_SPAWN_MAX_DISTANCE)) };
 
 	for (int y { startY }; y <= endY; ++y) {
 		Block* ground { m_GameMap.getBlockSafe(blockX, y) };
@@ -264,6 +265,26 @@ Vector2 Game::getMousePosWorld() const {
 	return GetScreenToWorld2D(GetMousePosition(), m_Camera);
 }
 
+bool Game::canPlaceBlock(const MapCell& hoveredCell) {
+	if (!hoveredCell.block) {
+		return false;
+	}
+
+	Vector2 blockCenter {
+		static_cast<float>(hoveredCell.x) + 0.5f,
+		static_cast<float>(hoveredCell.y) + 0.5f,
+	};
+
+	Transform2D blockTransform {
+		.pos = blockCenter,
+		.w = 1,
+		.h = 1,
+	};
+
+	return !m_Player.physics().transform.intersectTransform(
+	    blockTransform, -0.00005f);
+}
+
 void Game::updateEnemySpawning(float dt) {
 	m_EnemySpawnTimer -= dt;
 
@@ -271,7 +292,7 @@ void Game::updateEnemySpawning(float dt) {
 		return;
 	}
 
-	m_EnemySpawnTimer = EnemySpawnInterval;
+	m_EnemySpawnTimer = ENEMY_SPAWN_INTERVAL;
 
 	std::size_t enemyCount {};
 	for (const auto& [id, entity] : m_Entities.entities) {
@@ -280,12 +301,12 @@ void Game::updateEnemySpawning(float dt) {
 		}
 	}
 
-	if (enemyCount >= MaxEnemies) {
+	if (enemyCount >= MAX_ENEMIES) {
 		return;
 	}
 
 	float distance {
-		getRandomFloat(m_Rng, EnemySpawnMinDistance, EnemySpawnMaxDistance),
+		getRandomFloat(m_Rng, ENEMY_SPAWN_MIN_DISTANCE, ENEMY_SPAWN_MAX_DISTANCE),
 	};
 	float direction { getRandomChance(m_Rng, 0.5f) ? -1.f : 1.f };
 	float spawnX { m_Player.position().x + distance * direction };
@@ -338,7 +359,7 @@ void Game::updateWorldEditing() {
 
 	if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
 		if (m_EditMode == EditMode::Blocks) {
-			if (hoveredCell.block) {
+			if (canPlaceBlock(hoveredCell)) {
 				hoveredCell.block->type = m_CreativeSelectedBlock;
 				Audio::playSound(Audio::PlaceBlock);
 			}

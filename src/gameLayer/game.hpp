@@ -39,6 +39,7 @@ private:
 	int getTreeAtlasColumn(int x, int y);
 	std::optional<Vector2> findGroundSpawnPosition(float x);
 	Vector2 getMousePosWorld() const;
+	bool canPlaceBlock(const MapCell& hoveredCell);
 	void renderImGuiWindows();
 
 private:
@@ -51,12 +52,12 @@ private:
 	std::ranlux24_base m_Rng { std::random_device {}() };
 	std::uint32_t m_Seed { 1234 };
 
-	static constexpr float EnemySpawnInterval { 3.f };
-	static constexpr float EnemySpawnMinDistance { 20.f };
-	static constexpr float EnemySpawnMaxDistance { 50.f };
-	static constexpr float EnemyDespawnDistance { 100.f };
-	static constexpr float EnemyDespawnDelay { 10.f };
-	static constexpr std::size_t MaxEnemies { 20 };
+	static constexpr float ENEMY_SPAWN_INTERVAL { 3.f };
+	static constexpr float ENEMY_SPAWN_MIN_DISTANCE { 20.f };
+	static constexpr float ENEMY_SPAWN_MAX_DISTANCE { 50.f };
+	static constexpr float ENEMY_DESPAWN_DISTANCE { 100.f };
+	static constexpr float ENEMY_DESPAWN_DELAY { 10.f };
+	static constexpr std::size_t MAX_ENEMIES { 20 };
 	float m_EnemySpawnTimer {};
 
 	bool m_CreativeMode {};
@@ -69,9 +70,9 @@ private:
 	Structure m_CopyStructure {};
 	char m_SaveName[100] {};
 
-	static constexpr float PlayerSpeed { 10.f };
-	static constexpr float PlayerJumpStrength { 10.f };
-	Player m_Player { PlayerSpeed, PlayerJumpStrength };
+	static constexpr float PLAYER_SPEED { 10.f };
+	static constexpr float PLAYER_JUMP_STRENGTH { 10.f };
+	Player m_Player { PLAYER_SPEED, PLAYER_JUMP_STRENGTH };
 	EntityHolder m_Entities {};
 	AssetManager m_AssetManager {};
 
