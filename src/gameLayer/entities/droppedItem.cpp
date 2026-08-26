@@ -3,7 +3,6 @@
 #include "droppedItem.hpp"
 
 #include "assetManager.hpp"
-#include "blocks.hpp"
 #include "entity.hpp"
 #include "entityHolder.hpp"
 #include "helpers.hpp"
@@ -18,8 +17,9 @@ DroppedItem::DroppedItem(std::uint16_t itemType)
 }
 
 void DroppedItem::render(AssetManager& assetManager) const {
-	Vector2 size { this->size() };
-	Rectangle aabb { getRectangleForEntity(m_Physics.transform, size.x, size.y) };
+	Vector2 itemSize { size() };
+	Rectangle aabb { getRectangleForEntity(
+		  m_Physics.transform, itemSize.x, itemSize.y) };
 
 	Texture2D texture { getTextureForItemType(m_ItemType, assetManager) };
 	Rectangle source { getTextureCoordsForItemType(m_ItemType) };
@@ -28,8 +28,8 @@ void DroppedItem::render(AssetManager& assetManager) const {
 }
 
 bool DroppedItem::update(float dt, EntityUpdateData& updateData) {
-	int maxStackSize { this->maxStackSize(m_ItemType) };
-	if (m_ItemCount >= maxStackSize) {
+	int stackSizeLimit { maxStackSize() };
+	if (m_ItemCount >= stackSizeLimit) {
 		return true;
 	}
 
@@ -54,7 +54,7 @@ bool DroppedItem::update(float dt, EntityUpdateData& updateData) {
 		}
 
 		int total { other->itemCount() + m_ItemCount };
-		other->itemCount() = std::min(total, maxStackSize);
+		other->itemCount() = std::min(total, stackSizeLimit);
 		m_ItemCount = total - other->itemCount();
 		if (m_ItemCount == 0) {
 			// destroy
@@ -66,8 +66,8 @@ bool DroppedItem::update(float dt, EntityUpdateData& updateData) {
 
 EntityType DroppedItem::type() const { return EntityType::DroppedItem; }
 
-int DroppedItem::maxStackSize(std::uint16_t itemType) {
-	if (isBlock(itemType) || isWall(itemType)) {
+int DroppedItem::maxStackSize() const {
+	if (isBlock(m_ItemType) || isWall(m_ItemType)) {
 		return 64;
 	}
 	return 1;

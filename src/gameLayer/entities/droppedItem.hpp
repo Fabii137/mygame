@@ -20,7 +20,7 @@ public:
 	int& itemCount();
 	int itemCount() const;
 
-	static int maxStackSize(std::uint16_t itemType);
+	int maxStackSize() const;
 	Vector2 size() const;
 
 private:
