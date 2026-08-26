@@ -1,5 +1,6 @@
 #include <cmath>
 #include <cstdint>
+#include <print>
 
 #include <algorithm>
 #include <functional>
@@ -264,6 +265,26 @@ Vector2 Game::getMousePosWorld() const {
 	return GetScreenToWorld2D(GetMousePosition(), m_Camera);
 }
 
+bool Game::canPlaceBlock(const MapCell& hoveredCell) {
+	if (!hoveredCell.block) {
+		return false;
+	}
+
+	Vector2 blockCenter {
+		static_cast<float>(hoveredCell.x) + 0.5f,
+		static_cast<float>(hoveredCell.y) + 0.5f,
+	};
+
+	Transform2D blockTransform {
+		.pos = blockCenter,
+		.w = 1,
+		.h = 1,
+	};
+
+	return !m_Player.physics().transform.intersectTransform(
+	    blockTransform, -0.00005f);
+}
+
 void Game::updateEnemySpawning(float dt) {
 	m_EnemySpawnTimer -= dt;
 
@@ -338,7 +359,7 @@ void Game::updateWorldEditing() {
 
 	if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
 		if (m_EditMode == EditMode::Blocks) {
-			if (hoveredCell.block) {
+			if (canPlaceBlock(hoveredCell)) {
 				hoveredCell.block->type = m_CreativeSelectedBlock;
 				Audio::playSound(Audio::PlaceBlock);
 			}

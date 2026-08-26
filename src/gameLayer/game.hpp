@@ -39,6 +39,7 @@ private:
 	int getTreeAtlasColumn(int x, int y);
 	std::optional<Vector2> findGroundSpawnPosition(float x);
 	Vector2 getMousePosWorld() const;
+	bool canPlaceBlock(const MapCell& hoveredCell);
 	void renderImGuiWindows();
 
 private:
