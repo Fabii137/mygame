@@ -145,5 +145,7 @@ bool Slime::loadFromJson(Json& json) {
 		}
 	}
 
+	setColliderSize();
+
 	return true;
 }

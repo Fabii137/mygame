@@ -15,6 +15,13 @@ struct GameMap;
 struct Player;
 struct EntityHolder;
 
+void updateWorldSaving(
+    float dt, GameMap& gameMap, EntityHolder& entities, Player& player);
+
+void saveMap(GameMap& gameMap);
+
+void saveEntities(EntityHolder& entities, Player& player);
+
 void saveWorld(GameMap& gameMap, EntityHolder& entities, Player& player);
 
 bool loadWorld(GameMap& gameMap, EntityHolder& entities, Player& player);

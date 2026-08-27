@@ -127,5 +127,7 @@ bool DroppedItem::loadFromJson(Json& json) {
 	m_ItemCount = json["itemCount"];
 	m_ItemCount = std::clamp(m_ItemCount, 0, maxStackSize());
 
+	setColliderSize();
+
 	return true;
 }

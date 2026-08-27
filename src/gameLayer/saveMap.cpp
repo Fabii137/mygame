@@ -1,5 +1,6 @@
 #include <cctype>
 #include <cstdint>
+#include <print>
 
 #include <algorithm>
 #include <cstddef>
@@ -62,6 +63,29 @@ WallSaveRepresentation1 toWallRepresentation(Wall w) {
 	};
 }
 
+constexpr const char* SAVES_FOLDER_PATH { RESOURCES_PATH "../saves/" };
+constexpr const char* MAP_SAVE_PATH { RESOURCES_PATH "../saves/map.bin" };
+constexpr const char* MAP_SAVE_PATH_TMP { RESOURCES_PATH
+	"../saves/map.bin.tmp" };
+constexpr const char* PLAYER_SAVE_PATH { RESOURCES_PATH "../saves/player.txt" };
+constexpr const char* PLAYER_SAVE_PATH_TMP { RESOURCES_PATH
+	"../saves/player.txt.tmp" };
+constexpr const char* BIOMES_SAVE_PATH { RESOURCES_PATH "../saves/biomes.txt" };
+constexpr const char* BIOMES_SAVE_PATH_TMP { RESOURCES_PATH
+	"../saves/biomes.txt.tmp" };
+constexpr const char* ENTITIES_SAVE_PATH { RESOURCES_PATH
+	"../saves/entities.txt" };
+constexpr const char* ENTITIES_SAVE_PATH_TMP { RESOURCES_PATH
+	"../saves/entities.txt.tmp" };
+
+constexpr float ENTITIES_SAVE_DELAY { 5.f };
+constexpr float MAP_SAVE_DELAY { 5.f };
+constexpr float WORLD_SAVE_DELAY { 60.f };
+
+float entitiesSaveTimer { 0.f };
+float mapSaveTimer { 0.f };
+float worldSaveTimer { 0.f };
+
 template <typename T>
   requires std::is_base_of_v<Entity, T>
 void addEntityFromJson(
@@ -80,24 +104,23 @@ std::uint64_t highestEntityId(const EntityHolder& entities) {
 	return highest;
 }
 
-void saveMap(const GameMap& map) {
-	saveMapDataToFile(map.mapData, map.wallData, map.w, map.h,
-	    RESOURCES_PATH "../saves/map.bin");
+void writeMapData(const GameMap& map) {
+	saveMapDataToFile(map.mapData, map.wallData, map.w, map.h, MAP_SAVE_PATH_TMP);
 }
 
 bool loadMap(GameMap& map) {
-	return loadMapDataFromFile(map.mapData, map.wallData, map.w, map.h,
-	    RESOURCES_PATH "../saves/map.bin");
+	return loadMapDataFromFile(
+	    map.mapData, map.wallData, map.w, map.h, MAP_SAVE_PATH);
 }
 
-void savePlayer(const Player& player) {
+void writePlayer(const Player& player) {
 	Json json = player.formatToJson();
-	std::ofstream f { RESOURCES_PATH "../saves/player.txt" };
+	std::ofstream f { PLAYER_SAVE_PATH_TMP };
 	f << json.dump(2);
 }
 
 bool loadPlayer(Player& player) {
-	std::ifstream f { RESOURCES_PATH "../saves/player.txt" };
+	std::ifstream f { PLAYER_SAVE_PATH };
 	if (!f || !f.is_open()) {
 		return false;
 	}
@@ -110,7 +133,7 @@ bool loadPlayer(Player& player) {
 	return true;
 }
 
-void saveBiomes(const std::vector<Biome>& biomes) {
+void writeBiomes(const std::vector<Biome>& biomes) {
 	Json json {};
 	for (const Biome& biome : biomes) {
 		json.push_back({
@@ -120,12 +143,12 @@ void saveBiomes(const std::vector<Biome>& biomes) {
 		});
 	}
 
-	std::ofstream f { RESOURCES_PATH "../saves/biomes.txt" };
+	std::ofstream f { BIOMES_SAVE_PATH_TMP };
 	f << json.dump(2);
 }
 
 bool loadBiomes(std::vector<Biome>& biomes, int mapWidth) {
-	std::ifstream f { RESOURCES_PATH "../saves/biomes.txt" };
+	std::ifstream f { BIOMES_SAVE_PATH };
 	if (!f || !f.is_open()) {
 		return false;
 	}
@@ -161,14 +184,14 @@ bool loadBiomes(std::vector<Biome>& biomes, int mapWidth) {
 	return true;
 }
 
-void saveEntities(const EntityHolder& entities) {
+void writeEntities(const EntityHolder& entities) {
 	Json json {};
 
 	for (const auto& [id, entity] : entities.entities) {
 		json[std::to_string(id)] = entity->formatToJson();
 	}
 
-	std::ofstream f { RESOURCES_PATH "../saves/entities.txt" };
+	std::ofstream f { ENTITIES_SAVE_PATH_TMP };
 	f << json.dump(2);
 }
 
@@ -206,7 +229,7 @@ void loadEntity(EntityHolder& entities, const std::string& keyStr, Json& json) {
 }
 
 bool loadEntities(EntityHolder& entities) {
-	std::ifstream f { RESOURCES_PATH "../saves/entities.txt" };
+	std::ifstream f { ENTITIES_SAVE_PATH };
 	if (!f || !f.is_open()) {
 		return false;
 	}
@@ -332,14 +355,69 @@ bool loadMapDataFromFile(std::vector<Block>& blocks, std::vector<Wall>& walls,
 	return true;
 }
 
+void updateWorldSaving(
+    float dt, GameMap& gameMap, EntityHolder& entities, Player& player) {
+	entitiesSaveTimer += dt;
+	mapSaveTimer += dt;
+	worldSaveTimer += dt;
+
+	if (worldSaveTimer >= WORLD_SAVE_DELAY) {
+		std::println("Saving World");
+		saveWorld(gameMap, entities, player);
+		worldSaveTimer = 0.f;
+		entitiesSaveTimer = 0.f;
+		mapSaveTimer = 0.f;
+	} else if (entitiesSaveTimer >= ENTITIES_SAVE_DELAY) {
+		std::println("Saving Entities");
+		writeEntities(entities);
+		writePlayer(player);
+		entitiesSaveTimer = 0.f;
+	} else if (gameMap.shouldSave && mapSaveTimer >= MAP_SAVE_DELAY) {
+		std::println("Saving Map");
+		writeMapData(gameMap);
+		mapSaveTimer = 0.f;
+		gameMap.shouldSave = false;
+	}
+}
+
+void saveMap(GameMap& gameMap) {
+	std::error_code error {};
+	std::filesystem::create_directory(SAVES_FOLDER_PATH, error);
+
+	writeMapData(gameMap);
+	writeBiomes(gameMap.biomes);
+
+	std::filesystem::rename(MAP_SAVE_PATH_TMP, MAP_SAVE_PATH, error);
+	std::filesystem::rename(BIOMES_SAVE_PATH_TMP, BIOMES_SAVE_PATH, error);
+}
+
+void saveEntities(EntityHolder& entities, Player& player) {
+	std::error_code error {};
+	std::filesystem::create_directory(SAVES_FOLDER_PATH, error);
+
+	writePlayer(player);
+	writeEntities(entities);
+
+	std::filesystem::rename(PLAYER_SAVE_PATH_TMP, PLAYER_SAVE_PATH, error);
+	std::filesystem::rename(ENTITIES_SAVE_PATH_TMP, ENTITIES_SAVE_PATH, error);
+}
+
 void saveWorld(GameMap& gameMap, EntityHolder& entities, Player& player) {
 	std::error_code error {};
-	std::filesystem::create_directory(RESOURCES_PATH "../saves/", error);
+	std::filesystem::create_directory(SAVES_FOLDER_PATH, error);
 
-	saveMap(gameMap);
-	savePlayer(player);
-	saveBiomes(gameMap.biomes);
-	saveEntities(entities);
+	writeMapData(gameMap);
+	writePlayer(player);
+	writeBiomes(gameMap.biomes);
+	writeEntities(entities);
+
+	// atomic operation -> will either replace fully or not at all.
+	// it's still possible that not all files get renamed in time
+	// (e.g. on pc crash)
+	std::filesystem::rename(MAP_SAVE_PATH_TMP, MAP_SAVE_PATH, error);
+	std::filesystem::rename(PLAYER_SAVE_PATH_TMP, PLAYER_SAVE_PATH, error);
+	std::filesystem::rename(BIOMES_SAVE_PATH_TMP, BIOMES_SAVE_PATH, error);
+	std::filesystem::rename(ENTITIES_SAVE_PATH_TMP, ENTITIES_SAVE_PATH, error);
 }
 
 bool loadWorld(GameMap& gameMap, EntityHolder& entities, Player& player) {

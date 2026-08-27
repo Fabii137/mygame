@@ -157,5 +157,7 @@ bool Player::loadFromJson(Json& json) {
 		m_JumpStrength = json["jumpStrength"];
 	}
 
+	setColliderSize();
+
 	return true;
 }

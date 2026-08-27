@@ -33,4 +33,6 @@ struct GameMap {
 
 	Wall& wallUnsafe(int x, int y);
 	Wall* wallSafe(int x, int y);
+
+	bool shouldSave {};
 };

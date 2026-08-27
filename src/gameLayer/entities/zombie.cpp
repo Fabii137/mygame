@@ -108,5 +108,7 @@ bool Zombie::loadFromJson(Json& json) {
 		return false;
 	}
 
+	setColliderSize();
+
 	return true;
 }
