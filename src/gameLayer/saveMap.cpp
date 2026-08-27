@@ -27,24 +27,8 @@
 #include "nlohmann/json.hpp"
 
 namespace {
-template <typename T>
-  requires std::is_base_of_v<Entity, T>
-void addEntityFromJson(
-    EntityHolder& entities, std::uint64_t id, Json& entityJson) {
-	T entity {};
-	if (entity.loadFromJson(entityJson)) {
-		entities.entities[id] = std::make_unique<T>(entity);
-	}
-}
 
-std::uint64_t highestEntityId(EntityHolder& entities) {
-	std::uint64_t highest {};
-	for (auto& [id, entity] : entities.entities) {
-		highest = std::max(highest, id);
-	}
-	return highest;
-}
-}
+using Json = nlohmann::json;
 
 struct BlockSaveRepresentation1 {
 	Block::Type type {};
@@ -66,8 +50,6 @@ struct WallSaveRepresentation1 {
 	}
 };
 
-constexpr int VERSION { 1 };
-
 BlockSaveRepresentation1 toBlockRepresentation(Block b) {
 	return {
 		.type = b.type,
@@ -79,6 +61,27 @@ WallSaveRepresentation1 toWallRepresentation(Wall w) {
 		.type = w.type,
 	};
 }
+
+template <typename T>
+  requires std::is_base_of_v<Entity, T>
+void addEntityFromJson(
+    EntityHolder& entities, std::uint64_t id, Json& entityJson) {
+	T entity {};
+	if (entity.loadFromJson(entityJson)) {
+		entities.entities[id] = std::make_unique<T>(entity);
+	}
+}
+
+std::uint64_t highestEntityId(EntityHolder& entities) {
+	std::uint64_t highest {};
+	for (auto& [id, entity] : entities.entities) {
+		highest = std::max(highest, id);
+	}
+	return highest;
+}
+}
+
+constexpr int VERSION { 1 };
 
 bool saveMapDataToFile(const std::vector<Block>& blocks,
     const std::vector<Wall>& walls, int w, int h, const char* fileName) {
@@ -186,8 +189,6 @@ bool loadMapDataFromFile(std::vector<Block>& blocks, std::vector<Wall>& walls,
 	return true;
 }
 
-using Json = nlohmann::json;
-
 void saveWorld(GameMap& gameMap, EntityHolder& entities, Player& player) {
 	std::error_code error {};
 	std::filesystem::create_directory(RESOURCES_PATH "../saves/", error);
@@ -270,14 +271,6 @@ bool loadWorld(GameMap& gameMap, EntityHolder& entities, Player& player) {
 			    .endX = endX,
 			});
 		}
-	}
-
-	{
-		std::ifstream f { RESOURCES_PATH "../saves/idHolder.txt" };
-		if (!f || !f.is_open()) {
-			return false;
-		}
-		f >> loadedEntities.idHolder.idCounter;
 	}
 
 	{
