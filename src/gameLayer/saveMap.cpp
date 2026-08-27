@@ -72,12 +72,155 @@ void addEntityFromJson(
 	}
 }
 
-std::uint64_t highestEntityId(EntityHolder& entities) {
+std::uint64_t highestEntityId(const EntityHolder& entities) {
 	std::uint64_t highest {};
-	for (auto& [id, entity] : entities.entities) {
+	for (const auto& [id, entity] : entities.entities) {
 		highest = std::max(highest, id);
 	}
 	return highest;
+}
+
+void saveMap(const GameMap& map) {
+	saveMapDataToFile(map.mapData, map.wallData, map.w, map.h,
+	    RESOURCES_PATH "../saves/map.bin");
+}
+
+bool loadMap(GameMap& map) {
+	return loadMapDataFromFile(map.mapData, map.wallData, map.w, map.h,
+	    RESOURCES_PATH "../saves/map.bin");
+}
+
+void savePlayer(const Player& player) {
+	Json json = player.formatToJson();
+	std::ofstream f { RESOURCES_PATH "../saves/player.txt" };
+	f << json.dump(2);
+}
+
+bool loadPlayer(Player& player) {
+	std::ifstream f { RESOURCES_PATH "../saves/player.txt" };
+	if (!f || !f.is_open()) {
+		return false;
+	}
+
+	Json json = Json::parse(f, nullptr, false);
+	if (!json.is_object() || !player.loadFromJson(json)) {
+		return false;
+	}
+
+	return true;
+}
+
+void saveBiomes(const std::vector<Biome>& biomes) {
+	Json json {};
+	for (const Biome& biome : biomes) {
+		json.push_back({
+		    { "type", biome.type },
+		    { "startX", biome.startX },
+		    { "endX", biome.endX },
+		});
+	}
+
+	std::ofstream f { RESOURCES_PATH "../saves/biomes.txt" };
+	f << json.dump(2);
+}
+
+bool loadBiomes(std::vector<Biome>& biomes, int mapWidth) {
+	std::ifstream f { RESOURCES_PATH "../saves/biomes.txt" };
+	if (!f || !f.is_open()) {
+		return false;
+	}
+
+	Json json = Json::parse(f, nullptr, false);
+	if (!json.is_array()) {
+		return false;
+	}
+
+	for (const Json& biomeJson : json) {
+		if (!biomeJson.is_object() || !biomeJson.contains("type")
+		    || !biomeJson["type"].is_number() || !biomeJson.contains("startX")
+		    || !biomeJson["startX"].is_number() || !biomeJson.contains("endX")
+		    || !biomeJson["endX"].is_number()) {
+			return false;
+		}
+
+		int type { biomeJson["type"] };
+		int startX { biomeJson["startX"] };
+		int endX { biomeJson["endX"] };
+		if (type < 0 || type >= Biome::BIOMES_COUNT || startX < 0 || startX >= endX
+		    || endX > mapWidth) {
+			return false;
+		}
+
+		biomes.push_back({
+		    .type = static_cast<Biome::Type>(type),
+		    .startX = startX,
+		    .endX = endX,
+		});
+	}
+
+	return true;
+}
+
+void saveEntities(const EntityHolder& entities) {
+	Json json {};
+
+	for (auto& [id, entity] : entities.entities) {
+		json[std::to_string(id)] = entity->formatToJson();
+	}
+
+	std::ofstream f { RESOURCES_PATH "../saves/entities.txt" };
+	f << json.dump(2);
+}
+
+void loadEntity(EntityHolder& entities, const std::string& keyStr, Json& json) {
+	bool isNumeric { !keyStr.empty() && std::ranges::all_of(keyStr, ::isdigit) };
+	if (!isNumeric) {
+		return;
+	}
+
+	std::uint64_t id {};
+	for (char c : keyStr) {
+		id *= 10;
+		id += c - '0';
+	}
+
+	EntityType type {};
+	if (!json.contains("entityType") || !json["entityType"].is_number()) {
+		return;
+	}
+
+	type = json["entityType"];
+	switch (type) {
+	case EntityType::Player:
+		break; // already handled
+	case EntityType::Slime:
+		addEntityFromJson<Slime>(entities, id, json);
+		break;
+	case EntityType::DroppedItem:
+		addEntityFromJson<DroppedItem>(entities, id, json);
+		break;
+	case EntityType::Zombie:
+		addEntityFromJson<Zombie>(entities, id, json);
+		break;
+	}
+}
+
+bool loadEntities(EntityHolder& entities) {
+	std::ifstream f { RESOURCES_PATH "../saves/entities.txt" };
+	if (!f || !f.is_open()) {
+		return false;
+	}
+
+	Json json = Json::parse(f, nullptr, false);
+	if (!json.is_object()) {
+		return false;
+	}
+
+	for (auto it { json.begin() }; it != json.end(); ++it) {
+		loadEntity(entities, it.key(), it.value());
+	}
+
+	return true;
 }
 }
 
@@ -193,39 +336,10 @@ void saveWorld(GameMap& gameMap, EntityHolder& entities, Player& player) {
 	std::error_code error {};
 	std::filesystem::create_directory(RESOURCES_PATH "../saves/", error);
 
-	saveMapDataToFile(gameMap.mapData, gameMap.wallData, gameMap.w, gameMap.h,
-	    RESOURCES_PATH "../saves/map.bin");
-
-	{
-		Json json = player.formatToJson();
-		std::ofstream f { RESOURCES_PATH "../saves/player.txt" };
-		f << json.dump(2);
-	}
-
-	{
-		Json json {};
-		for (const Biome& biome : gameMap.biomes) {
-			json.push_back({
-			    { "type", biome.type },
-			    { "startX", biome.startX },
-			    { "endX", biome.endX },
-			});
-		}
-
-		std::ofstream f { RESOURCES_PATH "../saves/biomes.txt" };
-		f << json.dump(2);
-	}
-
-	{
-		Json json {};
-
-		for (auto& [id, entity] : entities.entities) {
-			json[std::to_string(id)] = entity->formatToJson();
-		}
-
-		std::ofstream f { RESOURCES_PATH "../saves/entities.txt" };
-		f << json.dump(2);
-	}
+	saveMap(gameMap);
+	savePlayer(player);
+	saveBiomes(gameMap.biomes);
+	saveEntities(entities);
 }
 
 bool loadWorld(GameMap& gameMap, EntityHolder& entities, Player& player) {
@@ -233,105 +347,20 @@ bool loadWorld(GameMap& gameMap, EntityHolder& entities, Player& player) {
 	EntityHolder loadedEntities {};
 	Player loadedPlayer {};
 
-	if (!loadMapDataFromFile(loadedMap.mapData, loadedMap.wallData, loadedMap.w,
-	        loadedMap.h, RESOURCES_PATH "../saves/map.bin")) {
+	if (!loadMap(loadedMap)) {
 		return false;
 	}
 
-	{
-		std::ifstream f { RESOURCES_PATH "../saves/biomes.txt" };
-		if (!f || !f.is_open()) {
-			return false;
-		}
-
-		Json json = Json::parse(f, nullptr, false);
-		if (!json.is_array()) {
-			return false;
-		}
-
-		for (const Json& biomeJson : json) {
-			if (!biomeJson.is_object() || !biomeJson.contains("type")
-			    || !biomeJson["type"].is_number() || !biomeJson.contains("startX")
-			    || !biomeJson["startX"].is_number() || !biomeJson.contains("endX")
-			    || !biomeJson["endX"].is_number()) {
-				return false;
-			}
-
-			int type { biomeJson["type"] };
-			int startX { biomeJson["startX"] };
-			int endX { biomeJson["endX"] };
-			if (type < 0 || type >= Biome::BIOMES_COUNT || startX < 0
-			    || startX >= endX || endX > loadedMap.w) {
-				return false;
-			}
-
-			loadedMap.biomes.push_back({
-			    .type = static_cast<Biome::Type>(type),
-			    .startX = startX,
-			    .endX = endX,
-			});
-		}
+	if (!loadBiomes(loadedMap.biomes, loadedMap.w)) {
+		return false;
 	}
 
-	{
-		std::ifstream f { RESOURCES_PATH "../saves/player.txt" };
-		if (!f || !f.is_open()) {
-			return false;
-		}
-
-		Json json = Json::parse(f, nullptr, false);
-		if (!json.is_object() || !loadedPlayer.loadFromJson(json)) {
-			return false;
-		}
+	if (!loadPlayer(loadedPlayer)) {
+		return false;
 	}
 
-	{
-		std::ifstream f { RESOURCES_PATH "../saves/entities.txt" };
-		if (!f || !f.is_open()) {
-			return false;
-		}
-
-		Json json = Json::parse(f, nullptr, false);
-		if (!json.is_object()) {
-			return false;
-		}
-
-		for (auto it { json.begin() }; it != json.end(); ++it) {
-			const std::string& keyStr { it.key() };
-			bool isNumeric { !keyStr.empty()
-				&& std::ranges::all_of(keyStr, ::isdigit) };
-			if (!isNumeric) {
-				continue;
-			}
-
-			std::uint64_t id {};
-			for (char c : keyStr) {
-				id *= 10;
-				id += c - '0';
-			}
-
-			Json& entityJson { it.value() };
-			EntityType type {};
-			if (!entityJson.contains("entityType")
-			    || !entityJson["entityType"].is_number()) {
-				continue;
-			}
-
-			type = entityJson["entityType"];
-			switch (type) {
-			case EntityType::Player:
-				break; // already handled
-			case EntityType::Slime:
-				addEntityFromJson<Slime>(loadedEntities, id, entityJson);
-				break;
-			case EntityType::DroppedItem:
-				addEntityFromJson<DroppedItem>(loadedEntities, id, entityJson);
-				break;
-			case EntityType::Zombie:
-				addEntityFromJson<Zombie>(loadedEntities, id, entityJson);
-				break;
-			}
-		}
+	if (!loadEntities(loadedEntities)) {
+		return false;
 	}
 
 	loadedEntities.idHolder.idCounter = highestEntityId(loadedEntities);
