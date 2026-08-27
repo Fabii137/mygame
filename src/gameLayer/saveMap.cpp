@@ -369,12 +369,11 @@ void updateWorldSaving(
 		mapSaveTimer = 0.f;
 	} else if (entitiesSaveTimer >= ENTITIES_SAVE_DELAY) {
 		std::println("Saving Entities");
-		writeEntities(entities);
-		writePlayer(player);
+		saveEntities(entities, player);
 		entitiesSaveTimer = 0.f;
 	} else if (gameMap.shouldSave && mapSaveTimer >= MAP_SAVE_DELAY) {
 		std::println("Saving Map");
-		writeMapData(gameMap);
+		saveMap(gameMap);
 		mapSaveTimer = 0.f;
 		gameMap.shouldSave = false;
 	}
