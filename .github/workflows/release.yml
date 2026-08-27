@@ -35,7 +35,7 @@ jobs:
 
           - os: ubuntu-latest
             name: Linux64-GCC
-            cmake_options: -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
+            cmake_options: -DCMAKE_C_COMPILER=gcc-14 -DCMAKE_CXX_COMPILER=g++-14
             artifact: mygame-linux-x64-gcc
             archive: mygame-linux-x64-gcc.tar.gz
             executable: mygame
