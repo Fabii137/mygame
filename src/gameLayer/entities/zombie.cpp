@@ -2,9 +2,12 @@
 
 #include "assetManager.hpp"
 #include "constants.hpp"
+#include "entity.hpp"
 #include "helpers.hpp"
 #include "random.h"
 #include "raymath.h"
+
+#include "nlohmann/json.hpp"
 
 Zombie::Zombie() {
 	setColliderSize();
@@ -104,8 +107,6 @@ bool Zombie::loadFromJson(Json& json) {
 	if (!loadEntityCommonFromJson(json)) {
 		return false;
 	}
-
-	setColliderSize();
 
 	return true;
 }

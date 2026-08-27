@@ -7,8 +7,9 @@
 #include "random.h"
 #include "raymath.h"
 
-Slime::Slime()
-    : m_SlimeType(DEFAULT_SLIME_TYPE) {
+#include "nlohmann/json.hpp"
+
+Slime::Slime() {
 	setColliderSize();
 	m_Health = maxHealth();
 }
@@ -142,11 +143,7 @@ bool Slime::loadFromJson(Json& json) {
 		    || m_SlimeType >= SlimeType::SLIME_TYPE_COUNT) {
 			return false;
 		}
-	} else {
-		m_SlimeType = DEFAULT_SLIME_TYPE;
 	}
-
-	setColliderSize();
 
 	return true;
 }

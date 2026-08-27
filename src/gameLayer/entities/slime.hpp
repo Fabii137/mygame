@@ -23,7 +23,6 @@ public:
 	bool loadFromJson(Json& json) override;
 
 private:
-	static constexpr SlimeType DEFAULT_SLIME_TYPE = SlimeType::Green;
 	enum class State { Wandering, Chasing };
 
 	EntityAnimation m_Animation {};

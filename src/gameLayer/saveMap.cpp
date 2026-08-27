@@ -31,10 +31,18 @@ template <typename T>
   requires std::is_base_of_v<Entity, T>
 void addEntityFromJson(
     EntityHolder& entities, std::uint64_t id, Json& entityJson) {
-	T zombie {};
-	if (zombie.loadFromJson(entityJson)) {
-		entities.entities[id] = std::make_unique<T>(zombie);
+	T entity {};
+	if (entity.loadFromJson(entityJson)) {
+		entities.entities[id] = std::make_unique<T>(entity);
 	}
+}
+
+std::uint64_t highestEntityId(EntityHolder& entities) {
+	std::uint64_t highest {};
+	for (auto& [id, entity] : entities.entities) {
+		highest = std::max(highest, id);
+	}
+	return highest;
 }
 }
 
@@ -188,11 +196,6 @@ void saveWorld(GameMap& gameMap, EntityHolder& entities, Player& player) {
 	    RESOURCES_PATH "../saves/map.bin");
 
 	{
-		std::ofstream f { RESOURCES_PATH "../saves/idHolder.txt" };
-		f << entities.idHolder.idCounter;
-	}
-
-	{
 		Json json = player.formatToJson();
 		std::ofstream f { RESOURCES_PATH "../saves/player.txt" };
 		f << json.dump(2);
@@ -337,6 +340,8 @@ bool loadWorld(GameMap& gameMap, EntityHolder& entities, Player& player) {
 			}
 		}
 	}
+
+	loadedEntities.idHolder.idCounter = highestEntityId(loadedEntities);
 
 	gameMap = std::move(loadedMap);
 	entities = std::move(loadedEntities);

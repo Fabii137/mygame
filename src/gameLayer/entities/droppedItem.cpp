@@ -12,6 +12,8 @@
 #include "raylib.h"
 #include "raymath.h"
 
+#include "nlohmann/json.hpp"
+
 DroppedItem::DroppedItem() { setColliderSize(); }
 
 void DroppedItem::render(AssetManager& assetManager) const {
@@ -105,15 +107,17 @@ Json DroppedItem::formatToJson() const {
 }
 
 bool DroppedItem::loadFromJson(Json& json) {
+	*this = {};
+
 	if (!loadEntityCommonFromJson(json)) {
 		return false;
 	}
 
-	if (!json.contains("itemType") || !json["itemType"].is_number()) {
+	if (!json.contains("itemType") || !json["itemType"].is_number_unsigned()) {
 		return false;
 	}
 	m_ItemType = json["itemType"];
-	if (m_ItemType < 0 || m_ItemType >= Item::LAST_ITEM) {
+	if (m_ItemType >= Item::LAST_ITEM) {
 		return false;
 	}
 
@@ -122,8 +126,6 @@ bool DroppedItem::loadFromJson(Json& json) {
 	}
 	m_ItemCount = json["itemCount"];
 	m_ItemCount = std::clamp(m_ItemCount, 0, maxStackSize());
-
-	setColliderSize();
 
 	return true;
 }

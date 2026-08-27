@@ -6,6 +6,8 @@
 #include "items.hpp"
 #include "raylib.h"
 
+#include "nlohmann/json.hpp"
+
 Player::Player()
     : m_Speed(DEFAULT_SPEED)
     , m_JumpStrength(DEFAULT_JUMP_STRENGTH) {
@@ -149,17 +151,11 @@ bool Player::loadFromJson(Json& json) {
 
 	if (json.contains("speed") && json["speed"].is_number()) {
 		m_Speed = json["speed"];
-	} else {
-		m_Speed = DEFAULT_SPEED;
 	}
 
 	if (json.contains("jumpStrength") && json["jumpStrength"].is_number()) {
 		m_JumpStrength = json["jumpStrength"];
-	} else {
-		m_JumpStrength = DEFAULT_JUMP_STRENGTH;
 	}
-
-	setColliderSize();
 
 	return true;
 }
