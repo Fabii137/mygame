@@ -1,15 +1,16 @@
 #include "slime.hpp"
 
+#include "asserts.h"
 #include "assetManager.hpp"
 #include "entity.hpp"
 #include "helpers.hpp"
 #include "random.h"
 #include "raymath.h"
 
-Slime::Slime(SlimeType type)
-    : m_Type(type) {
-	m_Physics.transform.w = 0.8f;
-	m_Physics.transform.h = 0.8f;
+#include "nlohmann/json.hpp"
+
+Slime::Slime() {
+	setColliderSize();
 	m_Health = maxHealth();
 }
 
@@ -18,7 +19,7 @@ void Slime::render(AssetManager& assetManager) const {
 
 	Color tint { isHit() ? ENTITY_HIT_TINT : WHITE };
 
-	switch (m_Type) {
+	switch (m_SlimeType) {
 	case SlimeType::Green:
 		drawTextureAtlas(assetManager.slime, m_Animation.positionX,
 		    m_Animation.positionY, aabb, tint);
@@ -30,6 +31,9 @@ void Slime::render(AssetManager& assetManager) const {
 	case SlimeType::Ice:
 		drawTextureAtlas(assetManager.iceSlime, m_Animation.positionX,
 		    m_Animation.positionY, aabb, tint);
+		break;
+	case SlimeType::SLIME_TYPE_COUNT:
+		permaAssertCommentDevelopment(false, "Invalid SlimeType");
 		break;
 	}
 }
@@ -93,16 +97,55 @@ bool Slime::update(float dt, EntityUpdateData& updateData) {
 EntityType Slime::type() const { return EntityType::Slime; }
 
 float Slime::maxHealth() const {
-	switch (m_Type) {
+	switch (m_SlimeType) {
 	case SlimeType::Green:
 		return 10.f;
 	case SlimeType::Ice:
 		return 20.f;
 	case SlimeType::Desert:
 		return 30.f;
+	case SlimeType::SLIME_TYPE_COUNT:
+		break;
 	}
 
+	permaAssertCommentDevelopment(false, "Invalid SlimeType");
 	return 0.f;
 }
 
 bool Slime::isEnemy() const { return true; }
+
+SlimeType& Slime::slimeType() { return m_SlimeType; }
+
+void Slime::setColliderSize() {
+	m_Physics.transform.w = 0.8f;
+	m_Physics.transform.h = 0.8f;
+}
+
+Json Slime::formatToJson() const {
+	Json json {};
+	addEntityCommonToJson(json);
+
+	json["slimeType"] = m_SlimeType;
+
+	return json;
+}
+
+bool Slime::loadFromJson(Json& json) {
+	*this = {};
+
+	if (!loadEntityCommonFromJson(json)) {
+		return false;
+	}
+
+	if (json.contains("slimeType") && json["slimeType"].is_number()) {
+		m_SlimeType = json["slimeType"];
+		if (static_cast<int>(m_SlimeType) < 0
+		    || m_SlimeType >= SlimeType::SLIME_TYPE_COUNT) {
+			return false;
+		}
+	}
+
+	setColliderSize();
+
+	return true;
+}

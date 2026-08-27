@@ -8,6 +8,8 @@
 #include "gameMap.hpp"
 #include "raymath.h"
 
+#include "nlohmann/json.hpp"
+
 Vector2 Transform2D::center() const { return { pos.x, pos.y }; }
 
 Vector2 Transform2D::top() const { return { pos.x, pos.y - h * 0.5f }; }
@@ -231,4 +233,40 @@ Vector2 PhysicalEntity::performCollisionOnOneAxis(
 	}
 
 	return pos;
+}
+
+Json PhysicalEntity::formatToJson() const {
+	Json json {};
+
+	json["posX"] = transform.pos.x;
+	json["posY"] = transform.pos.y;
+	json["velX"] = velocity.x;
+	json["velY"] = velocity.y;
+
+	return json;
+}
+
+bool PhysicalEntity::loadFromJson(Json json) {
+	*this = {};
+
+	if (!json.contains("posX") || !json["posX"].is_number()) {
+		return false;
+	}
+	transform.pos.x = json["posX"];
+
+	if (!json.contains("posY") || !json["posY"].is_number()) {
+		return false;
+	}
+	transform.pos.y = json["posY"];
+
+	if (json.contains("velX") && json["velX"].is_number()) {
+		velocity.x = json["velX"];
+	}
+
+	if (json.contains("velY") && json["velY"].is_number()) {
+		velocity.y = json["velY"];
+	}
+
+	lastPosition = transform.pos;
+	return true;
 }

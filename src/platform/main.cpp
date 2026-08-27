@@ -35,12 +35,14 @@ int main() {
 		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 		ImGui::PopStyleColor(2);
 
-		if (!game.update()) {
-			CloseWindow();
-		}
+		bool shouldExit { !game.update() };
 
 		rlImGuiEnd();
 		EndDrawing();
+
+		if (shouldExit) {
+			break;
+		}
 	}
 
 	rlImGuiShutdown();

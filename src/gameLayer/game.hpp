@@ -70,11 +70,10 @@ private:
 	Structure m_CopyStructure {};
 	char m_SaveName[100] {};
 
-	static constexpr float PLAYER_SPEED { 10.f };
-	static constexpr float PLAYER_JUMP_STRENGTH { 10.f };
-	Player m_Player { PLAYER_SPEED, PLAYER_JUMP_STRENGTH };
+	Player m_Player {};
 	EntityHolder m_Entities {};
 	AssetManager m_AssetManager {};
 
+	bool m_Failed {};
 	bool m_ShowImGui {};
 };

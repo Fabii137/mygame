@@ -6,11 +6,12 @@
 #include "items.hpp"
 #include "raylib.h"
 
-Player::Player(float speed, float jumpStrength)
-    : m_Speed(speed)
-    , m_JumpStrength(jumpStrength) {
-	m_Physics.transform.w = 0.8f;
-	m_Physics.transform.h = 1.6f;
+#include "nlohmann/json.hpp"
+
+Player::Player()
+    : m_Speed(DEFAULT_SPEED)
+    , m_JumpStrength(DEFAULT_JUMP_STRENGTH) {
+	setColliderSize();
 	m_Health = maxHealth();
 }
 
@@ -84,6 +85,11 @@ EntityType Player::type() const { return EntityType::Player; }
 
 float Player::maxHealth() const { return 10.f; }
 
+void Player::setColliderSize() {
+	m_Physics.transform.w = 0.8f;
+	m_Physics.transform.h = 1.6f;
+}
+
 float& Player::speed() { return m_Speed; }
 
 float Player::speed() const { return m_Speed; };
@@ -117,7 +123,41 @@ void Player::renderHeldItem(AssetManager& assetManager, Rectangle aabb) const {
 			aabb.x += 0.5f;
 		}
 	} else {
-		permaAssertCommentDevelopment(false, "Unkown held item type");
+		permaAssertCommentDevelopment(false, "Unknown held item type");
 	}
 	drawTexture(texture, textureUVItem, aabb);
+}
+
+float& Player::jumpStrength() { return m_JumpStrength; }
+
+float Player::jumpStrength() const { return m_JumpStrength; }
+
+Json Player::formatToJson() const {
+	Json json {};
+	addEntityCommonToJson(json);
+
+	json["speed"] = m_Speed;
+	json["jumpStrength"] = m_JumpStrength;
+
+	return json;
+}
+
+bool Player::loadFromJson(Json& json) {
+	*this = {};
+
+	if (!loadEntityCommonFromJson(json)) {
+		return false;
+	}
+
+	if (json.contains("speed") && json["speed"].is_number()) {
+		m_Speed = json["speed"];
+	}
+
+	if (json.contains("jumpStrength") && json["jumpStrength"].is_number()) {
+		m_JumpStrength = json["jumpStrength"];
+	}
+
+	setColliderSize();
+
+	return true;
 }

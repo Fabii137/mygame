@@ -42,14 +42,16 @@ void Game::spawnZombie(Vector2 position) {
 }
 
 void Game::spawnSlime(Vector2 position, SlimeType type) {
-	Slime slime { type };
+	Slime slime {};
+	slime.slimeType() = type;
 	slime.teleport(position);
 	m_Entities.add(std::move(slime));
 }
 
 void Game::spawnDroppedItem(Vector2 position, std::uint16_t type) {
 	position.x += getRandomFloat(m_Rng, -0.1f, 0.1f);
-	DroppedItem droppedItem { type };
+	DroppedItem droppedItem {};
+	droppedItem.itemType() = type;
 	droppedItem.teleport(position);
 	m_Entities.add(std::move(droppedItem));
 }
@@ -81,6 +83,11 @@ bool Game::update() {
 		m_ShowImGui = !m_ShowImGui;
 	}
 
+	if (m_Failed) {
+		return false;
+	}
+
+	updateWorldSaving(dt, m_GameMap, m_Entities, m_Player);
 	updateAudio(dt);
 	updateSettings();
 	updateEnemySpawning(dt);
@@ -270,6 +277,10 @@ bool Game::canPlaceBlock(const MapCell& hoveredCell) {
 		return false;
 	}
 
+	if (hoveredCell.block->type == m_CreativeSelectedBlock) {
+		return false;
+	}
+
 	Vector2 blockCenter {
 		static_cast<float>(hoveredCell.x) + 0.5f,
 		static_cast<float>(hoveredCell.y) + 0.5f,
@@ -327,19 +338,19 @@ void Game::updateWorldEditing() {
 	MapCell hoveredCell { m_GameMap.hoveredCell(getMousePosWorld()) };
 	if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
 		if (m_EditMode == EditMode::Blocks) {
-			if (hoveredCell.block) {
-				if (hoveredCell.block->type) {
-					Vector2 blockCenter {
-						static_cast<float>(hoveredCell.x) + 0.5f,
-						static_cast<float>(hoveredCell.y) + 0.5f,
-					};
-					spawnDroppedItem(blockCenter, hoveredCell.block->type);
-					Audio::playSound(Audio::BreakBlock);
-				}
+			if (hoveredCell.block && hoveredCell.block->type) {
+				Vector2 blockCenter {
+					static_cast<float>(hoveredCell.x) + 0.5f,
+					static_cast<float>(hoveredCell.y) + 0.5f,
+				};
+				spawnDroppedItem(blockCenter, hoveredCell.block->type);
+				Audio::playSound(Audio::BreakBlock);
+				m_GameMap.shouldSave = true;
 				*hoveredCell.block = {};
 			}
 		} else {
-			if (hoveredCell.wall) {
+			if (hoveredCell.wall && hoveredCell.wall->type) {
+				m_GameMap.shouldSave = true;
 				*hoveredCell.wall = {};
 			}
 		}
@@ -347,11 +358,11 @@ void Game::updateWorldEditing() {
 
 	if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE)) {
 		if (m_EditMode == EditMode::Blocks) {
-			if (hoveredCell.block) {
+			if (hoveredCell.block && hoveredCell.block->type) {
 				m_CreativeSelectedBlock = hoveredCell.block->type;
 			}
 		} else {
-			if (hoveredCell.wall) {
+			if (hoveredCell.wall && hoveredCell.wall->type) {
 				m_CreativeSelectedWall = hoveredCell.wall->type;
 			}
 		}
@@ -362,11 +373,15 @@ void Game::updateWorldEditing() {
 			if (canPlaceBlock(hoveredCell)) {
 				hoveredCell.block->type = m_CreativeSelectedBlock;
 				Audio::playSound(Audio::PlaceBlock);
+				m_GameMap.shouldSave = true;
 			}
 		} else {
-			if (hoveredCell.wall) {
-				hoveredCell.wall->type = m_CreativeSelectedWall;
-				Audio::playSound(Audio::PlaceBlock);
+			if (hoveredCell.wall && hoveredCell.wall->type) {
+				if (hoveredCell.wall->type != m_CreativeSelectedWall) {
+					hoveredCell.wall->type = m_CreativeSelectedWall;
+					Audio::playSound(Audio::PlaceBlock);
+					m_GameMap.shouldSave = true;
+				}
 			}
 		}
 	}
@@ -595,6 +610,12 @@ void Game::renderImGuiWindows() {
 		spawnZombie({ 18, 60 });
 	}
 	ImGui::Separator();
+
+	if (ImGui::Button("Load World")) {
+		if (!loadWorld(m_GameMap, m_Entities, m_Player)) {
+			m_Failed = true;
+		}
+	}
 
 	if (ImGui::Button("Load Texture Pack")) {
 		m_AssetManager.loadAll(RESOURCES_PATH "../texturePacks/hdtextures");
