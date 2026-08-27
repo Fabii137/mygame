@@ -123,7 +123,7 @@ void Player::renderHeldItem(AssetManager& assetManager, Rectangle aabb) const {
 			aabb.x += 0.5f;
 		}
 	} else {
-		permaAssertCommentDevelopment(false, "Unkown held item type");
+		permaAssertCommentDevelopment(false, "Unknown held item type");
 	}
 	drawTexture(texture, textureUVItem, aabb);
 }
