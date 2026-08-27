@@ -1,6 +1,5 @@
 #include <cctype>
 #include <cstdint>
-#include <print>
 
 #include <algorithm>
 #include <cstddef>
@@ -365,17 +364,14 @@ void updateWorldSaving(
 	worldSaveTimer += dt;
 
 	if (worldSaveTimer >= WORLD_SAVE_DELAY) {
-		std::println("Saving World");
 		saveWorld(gameMap, entities, player);
 		worldSaveTimer = 0.f;
 		entitiesSaveTimer = 0.f;
 		mapSaveTimer = 0.f;
 	} else if (entitiesSaveTimer >= ENTITIES_SAVE_DELAY) {
-		std::println("Saving Entities");
 		saveEntities(entities, player);
 		entitiesSaveTimer = 0.f;
 	} else if (gameMap.shouldSave && mapSaveTimer >= MAP_SAVE_DELAY) {
-		std::println("Saving Map");
 		saveMap(gameMap);
 		mapSaveTimer = 0.f;
 		gameMap.shouldSave = false;
