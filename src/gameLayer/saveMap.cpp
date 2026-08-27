@@ -443,7 +443,8 @@ bool loadWorld(GameMap& gameMap, EntityHolder& entities, Player& player) {
 		return false;
 	}
 
-	loadedEntities.idHolder.idCounter = highestEntityId(loadedEntities);
+	std::uint64_t highestId { highestEntityId(loadedEntities) };
+	loadedEntities.idHolder.idCounter = std::max(highestId, PLAYER_ID) + 1;
 
 	gameMap = std::move(loadedMap);
 	entities = std::move(loadedEntities);
