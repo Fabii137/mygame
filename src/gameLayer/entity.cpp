@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "entity.hpp"
 
 #include "nlohmann/json.hpp"

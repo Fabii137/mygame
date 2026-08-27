@@ -196,7 +196,10 @@ void writeEntities(const EntityHolder& entities) {
 }
 
 void loadEntity(EntityHolder& entities, const std::string& keyStr, Json& json) {
-	bool isNumeric { !keyStr.empty() && std::ranges::all_of(keyStr, ::isdigit) };
+	auto isDigit
+	    = [](char c) { return std::isdigit(static_cast<unsigned char>(c)); };
+
+	bool isNumeric { !keyStr.empty() && std::ranges::all_of(keyStr, isDigit) };
 	if (!isNumeric) {
 		return;
 	}
