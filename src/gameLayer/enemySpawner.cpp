@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include <algorithm>
 
 #include "enemySpawner.hpp"
@@ -48,16 +50,14 @@ void EnemySpawner::updateDespawning(
 
 		float distanceToPlayer { Vector2Distance(
 			  entity->position(), updateData.playerPosition) };
-		bool inBounds { updateData.gameMap.inBounds(entity->position()) };
 
 		if (distanceToPlayer >= ENEMY_DESPAWN_DISTANCE) {
 			entity->timeOutsideDespawnRange() += dt;
 		} else {
 			entity->timeOutsideDespawnRange() = 0.f;
 		}
-		bool shouldDespawn {
-			entity->timeOutsideDespawnRange() >= ENEMY_DESPAWN_DELAY || !inBounds
-		};
+		bool shouldDespawn { entity->timeOutsideDespawnRange()
+			>= ENEMY_DESPAWN_DELAY };
 		if (shouldDespawn) {
 			entity->kill();
 		}

@@ -212,8 +212,9 @@ void Game::updateEntities(float dt) {
 			}
 		}
 
+		bool inBounds { m_GameMap.inBounds(entity->position()) };
 		bool shouldKill { !it->second->update(dt, updateData)
-			|| !it->second->alive() };
+			|| !it->second->alive() || !inBounds };
 		if (shouldKill) {
 			pendingDrops.push_back({ entity->position(), entity->type() });
 
