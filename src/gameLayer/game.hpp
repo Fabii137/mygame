@@ -6,6 +6,7 @@
 
 #include "assetManager.hpp"
 #include "background.hpp"
+#include "enemySpawner.hpp"
 #include "entityHolder.hpp"
 #include "gameMap.hpp"
 #include "raylib.h"
@@ -37,7 +38,6 @@ private:
 	void renderBackground();
 	int getTextureVariant(int x, int y);
 	int getTreeAtlasColumn(int x, int y);
-	std::optional<Vector2> findGroundSpawnPosition(float x);
 	Vector2 getMousePosWorld() const;
 	bool canPlaceBlock(const MapCell& hoveredCell);
 	void renderImGuiWindows();
@@ -52,14 +52,6 @@ private:
 	std::ranlux24_base m_Rng { std::random_device {}() };
 	std::uint32_t m_Seed { 1234 };
 
-	static constexpr float ENEMY_SPAWN_INTERVAL { 3.f };
-	static constexpr float ENEMY_SPAWN_MIN_DISTANCE { 20.f };
-	static constexpr float ENEMY_SPAWN_MAX_DISTANCE { 50.f };
-	static constexpr float ENEMY_DESPAWN_DISTANCE { 100.f };
-	static constexpr float ENEMY_DESPAWN_DELAY { 10.f };
-	static constexpr std::size_t MAX_ENEMIES { 20 };
-	float m_EnemySpawnTimer {};
-
 	bool m_CreativeMode {};
 	EditMode m_EditMode { EditMode::Blocks };
 	Block::Type m_CreativeSelectedBlock { Block::Dirt };
@@ -72,6 +64,7 @@ private:
 
 	Player m_Player {};
 	EntityHolder m_Entities {};
+	EnemySpawner m_EnemySpawner {};
 	AssetManager m_AssetManager {};
 
 	bool m_Failed {};

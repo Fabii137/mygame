@@ -37,6 +37,10 @@ void Entity::updatePhysics(float dt, GameMap& gameMap, bool applyGravity) {
 
 bool Entity::isEnemy() const { return false; }
 
+bool Entity::alive() const { return m_Health > 0.f; }
+
+void Entity::kill() { m_Health = 0.f; }
+
 void Entity::updateTimers(float dt) {
 	m_RedTimer = std::max(m_RedTimer - dt, 0.f);
 	m_HitTimer = std::max(m_HitTimer - dt, 0.f);

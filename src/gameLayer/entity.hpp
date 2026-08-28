@@ -55,6 +55,8 @@ public:
 	    float dt, GameMap& gameMap, bool applyGravity = true);
 
 	virtual bool isEnemy() const;
+	bool alive() const;
+	virtual void kill();
 
 	virtual Json formatToJson() const = 0;
 	virtual bool loadFromJson(Json& json) = 0;
