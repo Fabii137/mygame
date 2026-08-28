@@ -70,12 +70,16 @@ bool Game::init() {
 	m_AssetManager.loadAll();
 	loadSettings();
 
-	WorldGenerator worldGenerator { m_GameMap, m_WorldSettings, m_Seed };
-	worldGenerator.generate();
-
 	m_Camera.target = { 20.f, 120.f };
 	m_Camera.rotation = 0.f;
 	m_Camera.zoom = 100.f;
+
+	if (loadWorld(m_GameMap, m_Entities, m_Player)) {
+		return true;
+	}
+
+	WorldGenerator worldGenerator { m_GameMap, m_WorldSettings, m_Seed };
+	worldGenerator.generate();
 
 	m_Player.teleport({ 20.f, 120.f });
 
@@ -90,10 +94,6 @@ bool Game::update() {
 
 	if (IsKeyPressed(KEY_F10)) {
 		m_ShowImGui = !m_ShowImGui;
-	}
-
-	if (m_Failed) {
-		return false;
 	}
 
 	updateWorldSaving(dt, m_GameMap, m_Entities, m_Player);
@@ -557,12 +557,6 @@ void Game::renderImGuiWindows() {
 		spawnZombie({ 18, 60 });
 	}
 	ImGui::Separator();
-
-	if (ImGui::Button("Load World")) {
-		if (!loadWorld(m_GameMap, m_Entities, m_Player)) {
-			m_Failed = true;
-		}
-	}
 
 	if (ImGui::Button("Load Texture Pack")) {
 		m_AssetManager.loadAll(RESOURCES_PATH "../texturePacks/hdtextures");

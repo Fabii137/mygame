@@ -67,6 +67,5 @@ private:
 	EnemySpawner m_EnemySpawner {};
 	AssetManager m_AssetManager {};
 
-	bool m_Failed {};
 	bool m_ShowImGui {};
 };
