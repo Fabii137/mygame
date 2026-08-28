@@ -7,6 +7,7 @@
 #include <limits>
 #include <random>
 #include <utility>
+#include <vector>
 
 #include "game.hpp"
 
@@ -15,6 +16,7 @@
 #include "background.hpp"
 #include "blocks.hpp"
 #include "constants.hpp"
+#include "enemySpawner.hpp"
 #include "entity.hpp"
 #include "entityHolder.hpp"
 #include "gameMap.hpp"
@@ -24,7 +26,6 @@
 #include "physics.hpp"
 #include "random.h"
 #include "raylib.h"
-#include "raymath.h"
 #include "saveMap.hpp"
 #include "settings.hpp"
 #include "walls.hpp"
@@ -34,6 +35,14 @@
 #include "entities/player.hpp"
 #include "entities/slime.hpp"
 #include "entities/zombie.hpp"
+
+namespace {
+struct PendingDrop {
+	Vector2 position {};
+	EntityType type {};
+};
+
+}
 
 void Game::spawnZombie(Vector2 position) {
 	Zombie zombie {};
@@ -61,12 +70,16 @@ bool Game::init() {
 	m_AssetManager.loadAll();
 	loadSettings();
 
-	WorldGenerator worldGenerator { m_GameMap, m_WorldSettings, m_Seed };
-	worldGenerator.generate();
-
 	m_Camera.target = { 20.f, 120.f };
 	m_Camera.rotation = 0.f;
 	m_Camera.zoom = 100.f;
+
+	if (loadWorld(m_GameMap, m_Entities, m_Player)) {
+		return true;
+	}
+
+	WorldGenerator worldGenerator { m_GameMap, m_WorldSettings, m_Seed };
+	worldGenerator.generate();
 
 	m_Player.teleport({ 20.f, 120.f });
 
@@ -83,16 +96,12 @@ bool Game::update() {
 		m_ShowImGui = !m_ShowImGui;
 	}
 
-	if (m_Failed) {
-		return false;
-	}
-
 	updateWorldSaving(dt, m_GameMap, m_Entities, m_Player);
 	updateAudio(dt);
 	updateSettings();
-	updateEnemySpawning(dt);
 	updatePlayer(dt);
 	updateCamera();
+	updateEnemySpawning(dt);
 	updateEntities(dt);
 	updateStructureSelection();
 	updateWorldEditing();
@@ -184,6 +193,7 @@ void Game::updatePlayer(float dt) {
 void Game::updateEntities(float dt) {
 	Vector2 mousePosWorld { getMousePosWorld() };
 
+	std::vector<PendingDrop> pendingDrops {};
 	for (auto it { m_Entities.entities.begin() };
 	    it != m_Entities.entities.end();) {
 		EntityUpdateData updateData {
@@ -202,29 +212,12 @@ void Game::updateEntities(float dt) {
 			}
 		}
 
-		float distanceToPlayer { Vector2Distance(
-			  entity->position(), m_Player.position()) };
 		bool inBounds { m_GameMap.inBounds(entity->position()) };
-
-		bool shouldDespawn { false };
-		if (it->second->isEnemy()) {
-			if (distanceToPlayer >= ENEMY_DESPAWN_DISTANCE) {
-				it->second->timeOutsideDespawnRange() += dt;
-			} else {
-				it->second->timeOutsideDespawnRange() = 0.f;
-			}
-			shouldDespawn
-			    = it->second->timeOutsideDespawnRange() >= ENEMY_DESPAWN_DELAY;
-		}
-
 		bool shouldKill { !it->second->update(dt, updateData)
-			|| it->second->health() <= 0.f || !inBounds || shouldDespawn };
+			|| !it->second->alive() || !inBounds };
 		if (shouldKill) {
-			if (entity->type() == EntityType::Slime) {
-				spawnDroppedItem(it->second->position(), Block::GoldBlock);
-			} else if (entity->type() == EntityType::Zombie) {
-				spawnDroppedItem(it->second->position(), Block::IronBlock);
-			}
+			pendingDrops.push_back({ entity->position(), entity->type() });
+
 			it = m_Entities.entities.erase(it);
 			continue;
 		}
@@ -232,40 +225,14 @@ void Game::updateEntities(float dt) {
 		it->second->updatePhysics(dt, m_GameMap);
 		++it;
 	}
-}
 
-std::optional<Vector2> Game::findGroundSpawnPosition(float x) {
-	int blockX { static_cast<int>(std::floor(x)) };
-
-	if (blockX < 0 || blockX >= m_GameMap.w) {
-		return std::nullopt;
-	}
-
-	int playerY { static_cast<int>(std::floor(m_Player.position().y)) };
-	int startY { std::max(
-		  1, playerY - static_cast<int>(ENEMY_SPAWN_MAX_DISTANCE)) };
-	int endY { std::min(
-		  m_GameMap.h - 2, playerY + static_cast<int>(ENEMY_SPAWN_MAX_DISTANCE)) };
-
-	for (int y { startY }; y <= endY; ++y) {
-		Block* ground { m_GameMap.blockSafe(blockX, y) };
-		Block* above { m_GameMap.blockSafe(blockX, y - 1) };
-		Block* above2 { m_GameMap.blockSafe(blockX, y - 2) };
-
-		if (!ground || !above || !above2) {
-			continue;
-		}
-
-		if (ground->type != Block::Air && above->type == Block::Air
-		    && above2->type == Block::Air) {
-			return Vector2 {
-				static_cast<float>(blockX) + 0.5f,
-				static_cast<float>(y) - 0.5f,
-			};
+	for (const PendingDrop& drop : pendingDrops) {
+		if (drop.type == EntityType::Slime) {
+			spawnDroppedItem(drop.position, Block::GoldBlock);
+		} else if (drop.type == EntityType::Zombie) {
+			spawnDroppedItem(drop.position, Block::IronBlock);
 		}
 	}
-
-	return std::nullopt;
 }
 
 Vector2 Game::getMousePosWorld() const {
@@ -297,37 +264,16 @@ bool Game::canPlaceBlock(const MapCell& hoveredCell) {
 }
 
 void Game::updateEnemySpawning(float dt) {
-	m_EnemySpawnTimer -= dt;
-
-	if (m_EnemySpawnTimer > 0.f) {
-		return;
-	}
-
-	m_EnemySpawnTimer = ENEMY_SPAWN_INTERVAL;
-
-	std::size_t enemyCount {};
-	for (const auto& [id, entity] : m_Entities.entities) {
-		if (entity->isEnemy()) {
-			enemyCount++;
-		}
-	}
-
-	if (enemyCount >= MAX_ENEMIES) {
-		return;
-	}
-
-	float distance {
-		getRandomFloat(m_Rng, ENEMY_SPAWN_MIN_DISTANCE, ENEMY_SPAWN_MAX_DISTANCE),
+	EnemySpawnerUpdateData updateData {
+		.rng = m_Rng,
+		.playerPosition = m_Player.position(),
+		.gameMap = m_GameMap,
+		.entities = m_Entities,
+		.spawnEnemy
+		= [&](Vector2 position) { spawnSlime(position, SlimeType::Green); },
 	};
-	float direction { getRandomChance(m_Rng, 0.5f) ? -1.f : 1.f };
-	float spawnX { m_Player.position().x + distance * direction };
 
-	auto spawnPosition { findGroundSpawnPosition(spawnX) };
-	if (!spawnPosition.has_value()) {
-		return;
-	}
-
-	spawnSlime(spawnPosition.value(), SlimeType::Green);
+	m_EnemySpawner.update(dt, updateData);
 }
 
 void Game::updateWorldEditing() {
@@ -338,7 +284,8 @@ void Game::updateWorldEditing() {
 	MapCell hoveredCell { m_GameMap.hoveredCell(getMousePosWorld()) };
 	if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
 		if (m_EditMode == EditMode::Blocks) {
-			if (hoveredCell.block && hoveredCell.block->type) {
+			Block* block { hoveredCell.block };
+			if (block && block->type) {
 				Vector2 blockCenter {
 					static_cast<float>(hoveredCell.x) + 0.5f,
 					static_cast<float>(hoveredCell.y) + 0.5f,
@@ -346,12 +293,13 @@ void Game::updateWorldEditing() {
 				spawnDroppedItem(blockCenter, hoveredCell.block->type);
 				Audio::playSound(Audio::BreakBlock);
 				m_GameMap.shouldSave = true;
-				*hoveredCell.block = {};
+				*block = {};
 			}
 		} else {
-			if (hoveredCell.wall && hoveredCell.wall->type) {
+			Wall* wall { hoveredCell.wall };
+			if (wall && wall->type) {
 				m_GameMap.shouldSave = true;
-				*hoveredCell.wall = {};
+				*wall = {};
 			}
 		}
 	}
@@ -376,12 +324,11 @@ void Game::updateWorldEditing() {
 				m_GameMap.shouldSave = true;
 			}
 		} else {
-			if (hoveredCell.wall && hoveredCell.wall->type) {
-				if (hoveredCell.wall->type != m_CreativeSelectedWall) {
-					hoveredCell.wall->type = m_CreativeSelectedWall;
-					Audio::playSound(Audio::PlaceBlock);
-					m_GameMap.shouldSave = true;
-				}
+			Wall* wall { hoveredCell.wall };
+			if (wall && wall->type && wall->type != m_CreativeSelectedWall) {
+				wall->type = m_CreativeSelectedWall;
+				Audio::playSound(Audio::PlaceBlock);
+				m_GameMap.shouldSave = true;
 			}
 		}
 	}
@@ -610,12 +557,6 @@ void Game::renderImGuiWindows() {
 		spawnZombie({ 18, 60 });
 	}
 	ImGui::Separator();
-
-	if (ImGui::Button("Load World")) {
-		if (!loadWorld(m_GameMap, m_Entities, m_Player)) {
-			m_Failed = true;
-		}
-	}
 
 	if (ImGui::Button("Load Texture Pack")) {
 		m_AssetManager.loadAll(RESOURCES_PATH "../texturePacks/hdtextures");

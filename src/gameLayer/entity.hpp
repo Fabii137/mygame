@@ -24,7 +24,7 @@ enum class EntityType { Player, Slime, DroppedItem, Zombie };
 struct EntityUpdateData {
 	Vector2 playerPosition {};
 	std::ranlux24_base& rng;
-	EntityHolder& entityHolder;
+	const EntityHolder& entityHolder;
 	std::uint64_t ownId {};
 	bool creativeMode {};
 };
@@ -55,6 +55,8 @@ public:
 	    float dt, GameMap& gameMap, bool applyGravity = true);
 
 	virtual bool isEnemy() const;
+	bool alive() const;
+	virtual void kill();
 
 	virtual Json formatToJson() const = 0;
 	virtual bool loadFromJson(Json& json) = 0;
