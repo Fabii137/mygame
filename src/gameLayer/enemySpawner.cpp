@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "enemySpawner.hpp"
 
 #include "random.h"
@@ -23,8 +21,6 @@ void EnemySpawner::updateSpawning(
 		return;
 	}
 
-	std::cout << "Spawn attempt\n";
-
 	float distance {
 		getRandomFloat(
 		    updateData.rng, ENEMY_SPAWN_MIN_DISTANCE, ENEMY_SPAWN_MAX_DISTANCE),
@@ -37,8 +33,6 @@ void EnemySpawner::updateSpawning(
 	if (!spawnPosition.has_value()) {
 		return;
 	}
-
-	std::cout << "Spawning\n";
 
 	updateData.spawnEnemy(spawnPosition.value());
 }
@@ -103,7 +97,7 @@ std::optional<Vector2> EnemySpawner::findSpawnPosition(
 	return std::nullopt;
 }
 
-std::size_t EnemySpawner::getEnemiesCount(EntityHolder& entities) const {
+std::size_t EnemySpawner::getEnemiesCount(const EntityHolder& entities) const {
 	std::size_t count {};
 	for (const auto& [id, entity] : entities.entities) {
 		if (entity->isEnemy()) {

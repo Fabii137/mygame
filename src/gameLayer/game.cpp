@@ -1,6 +1,5 @@
 #include <cmath>
 #include <cstdint>
-#include <print>
 
 #include <algorithm>
 #include <functional>
@@ -26,7 +25,6 @@
 #include "physics.hpp"
 #include "random.h"
 #include "raylib.h"
-#include "raymath.h"
 #include "saveMap.hpp"
 #include "settings.hpp"
 #include "walls.hpp"
@@ -205,14 +203,18 @@ void Game::updateEntities(float dt) {
 		}
 
 		bool shouldKill { !it->second->update(dt, updateData)
-			|| it->second->alive() };
+			|| !it->second->alive() };
 		if (shouldKill) {
-			if (entity->type() == EntityType::Slime) {
-				spawnDroppedItem(it->second->position(), Block::GoldBlock);
-			} else if (entity->type() == EntityType::Zombie) {
-				spawnDroppedItem(it->second->position(), Block::IronBlock);
-			}
+			Vector2 entityPosition{ entity->position() };
+			EntityType type{ entity->type() };
+
 			it = m_Entities.entities.erase(it);
+
+			if (type == EntityType::Slime) {
+				spawnDroppedItem(entityPosition, Block::GoldBlock);
+			} else if (type == EntityType::Zombie) {
+				spawnDroppedItem(entityPosition, Block::IronBlock);
+			}
 			continue;
 		}
 
@@ -257,10 +259,6 @@ void Game::updateEnemySpawning(float dt) {
 		.entities = m_Entities,
 		.spawnEnemy =
 		    [&](Vector2 position) {
-		      std::println("Player x: {} y: {}", m_Player.position().x,
-		          m_Player.position().y);
-		      std::println(
-		          "Spawning slime at x: {}, y: {}", position.x, position.y);
 		      spawnSlime(position, SlimeType::Green);
 		    },
 	};

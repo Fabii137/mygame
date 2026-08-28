@@ -13,7 +13,7 @@ struct EnemySpawnerUpdateData {
 	std::ranlux24_base& rng;
 	const Vector2& playerPosition;
 	GameMap& gameMap;
-	EntityHolder& entities;
+	const EntityHolder& entities;
 	const std::function<void(Vector2)>& spawnEnemy;
 };
 
@@ -26,7 +26,7 @@ private:
 	void updateDespawning(float dt, EnemySpawnerUpdateData& updateData);
 	std::optional<Vector2> findSpawnPosition(
 	    float x, GameMap& gameMap, const Vector2& playerPosition) const;
-	std::size_t getEnemiesCount(EntityHolder& entities) const;
+	std::size_t getEnemiesCount(const EntityHolder& entities) const;
 
 private:
 	static constexpr float ENEMY_SPAWN_INTERVAL { 3.f };
