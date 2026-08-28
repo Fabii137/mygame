@@ -14,7 +14,7 @@ struct EnemySpawnerUpdateData {
 	const Vector2& playerPosition;
 	GameMap& gameMap;
 	const EntityHolder& entities;
-	const std::function<void(Vector2)>& spawnEnemy;
+	std::function<void(Vector2)> spawnEnemy;
 };
 
 class EnemySpawner {

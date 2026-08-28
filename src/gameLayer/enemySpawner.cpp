@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "enemySpawner.hpp"
 
 #include "random.h"

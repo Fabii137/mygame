@@ -24,7 +24,7 @@ enum class EntityType { Player, Slime, DroppedItem, Zombie };
 struct EntityUpdateData {
 	Vector2 playerPosition {};
 	std::ranlux24_base& rng;
-	EntityHolder& entityHolder;
+	const EntityHolder& entityHolder;
 	std::uint64_t ownId {};
 	bool creativeMode {};
 };

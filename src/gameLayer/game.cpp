@@ -7,6 +7,7 @@
 #include <limits>
 #include <random>
 #include <utility>
+#include <vector>
 
 #include "game.hpp"
 
@@ -34,6 +35,14 @@
 #include "entities/player.hpp"
 #include "entities/slime.hpp"
 #include "entities/zombie.hpp"
+
+namespace {
+struct PendingDrop {
+	Vector2 position {};
+	EntityType type {};
+};
+
+}
 
 void Game::spawnZombie(Vector2 position) {
 	Zombie zombie {};
@@ -184,6 +193,7 @@ void Game::updatePlayer(float dt) {
 void Game::updateEntities(float dt) {
 	Vector2 mousePosWorld { getMousePosWorld() };
 
+	std::vector<PendingDrop> pendingDrops {};
 	for (auto it { m_Entities.entities.begin() };
 	    it != m_Entities.entities.end();) {
 		EntityUpdateData updateData {
@@ -205,21 +215,22 @@ void Game::updateEntities(float dt) {
 		bool shouldKill { !it->second->update(dt, updateData)
 			|| !it->second->alive() };
 		if (shouldKill) {
-			Vector2 entityPosition{ entity->position() };
-			EntityType type{ entity->type() };
+			pendingDrops.push_back({ entity->position(), entity->type() });
 
 			it = m_Entities.entities.erase(it);
-
-			if (type == EntityType::Slime) {
-				spawnDroppedItem(entityPosition, Block::GoldBlock);
-			} else if (type == EntityType::Zombie) {
-				spawnDroppedItem(entityPosition, Block::IronBlock);
-			}
 			continue;
 		}
 
 		it->second->updatePhysics(dt, m_GameMap);
 		++it;
+	}
+
+	for (const PendingDrop& drop : pendingDrops) {
+		if (drop.type == EntityType::Slime) {
+			spawnDroppedItem(drop.position, Block::GoldBlock);
+		} else if (drop.type == EntityType::Zombie) {
+			spawnDroppedItem(drop.position, Block::IronBlock);
+		}
 	}
 }
 
@@ -257,10 +268,8 @@ void Game::updateEnemySpawning(float dt) {
 		.playerPosition = m_Player.position(),
 		.gameMap = m_GameMap,
 		.entities = m_Entities,
-		.spawnEnemy =
-		    [&](Vector2 position) {
-		      spawnSlime(position, SlimeType::Green);
-		    },
+		.spawnEnemy
+		= [&](Vector2 position) { spawnSlime(position, SlimeType::Green); },
 	};
 
 	m_EnemySpawner.update(dt, updateData);
