@@ -83,7 +83,7 @@ bool Player::update(float dt, EntityUpdateData& updateData) {
 
 EntityType Player::type() const { return EntityType::Player; }
 
-float Player::maxHealth() const { return 11.f; }
+float Player::maxHealth() const { return 10.f; }
 
 void Player::setColliderSize() {
 	m_Physics.transform.w = 0.8f;
