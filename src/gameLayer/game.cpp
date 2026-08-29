@@ -402,10 +402,7 @@ void Game::render() {
 	renderBackground();
 	BeginMode2D(m_Camera);
 
-	Vector2 screenSize {
-		static_cast<float>(GetScreenWidth()),
-		static_cast<float>(GetScreenHeight()),
-	};
+	Vector2 screenSize { getScreenSize() };
 	Vector2 topLeftView { GetScreenToWorld2D({ 0, 0 }, m_Camera) };
 	Vector2 bottomRightView { GetScreenToWorld2D(screenSize, m_Camera) };
 
@@ -488,6 +485,8 @@ void Game::render() {
 
 	EndMode2D();
 
+	renderPlayerHearts();
+
 	Color ambientTint { m_Background.getAmbientTint() };
 	DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), ambientTint);
 }
@@ -496,6 +495,64 @@ void Game::renderBackground() {
 	Vector2 mapSize { static_cast<float>(m_GameMap.w),
 		static_cast<float>(m_GameMap.h) };
 	m_Background.draw(m_AssetManager, m_Camera, mapSize);
+}
+
+void Game::renderPlayerHearts() {
+	Vector2 screenSize { getScreenSize() };
+
+	enum AtlasCol {
+		FullHeart,
+		HalfHeartCutOff,
+		HalfHeart,
+		EmptyHeartCutOff,
+		EmptyHeart,
+	};
+
+	constexpr int maxHeartsPerRow { 10 };
+
+	int maxHealth { static_cast<int>(m_Player.maxHealth()) };
+	bool oddMaxHealth { maxHealth % 2 != 0 };
+	int health { static_cast<int>(m_Player.health()) };
+
+	// round up hearts to handle half hearts
+	int hearts { (maxHealth + 1) / 2 };
+	int heartsPerRow { std::min(hearts, maxHeartsPerRow) };
+
+	Rectangle heartsRectangle {};
+	heartsRectangle.height = screenSize.y * 0.05f;
+	heartsRectangle.width = heartsRectangle.height * heartsPerRow;
+	heartsRectangle.x = screenSize.x - heartsRectangle.width;
+	heartsRectangle.y = 0;
+
+	for (int i {}; i < hearts; i++) {
+		int healthForHeart { health - i * 2 };
+		int atlasX {};
+		if (healthForHeart >= 2) {
+			atlasX = FullHeart;
+		} else if (healthForHeart == 1) {
+			atlasX = HalfHeart;
+		} else {
+			atlasX = EmptyHeart;
+		}
+
+		bool lastHeart { i == hearts - 1 };
+		if (lastHeart && oddMaxHealth) {
+			if (healthForHeart >= 1) {
+				atlasX = HalfHeartCutOff;
+			} else {
+				atlasX = EmptyHeartCutOff;
+			}
+		}
+
+		int row { i / heartsPerRow };
+		int col { i % heartsPerRow };
+		Rectangle heartRectangle { heartsRectangle };
+		heartRectangle.width = heartRectangle.height;
+		heartRectangle.x += heartRectangle.width * col;
+		heartRectangle.y += heartRectangle.height * row;
+
+		drawTextureAtlas(m_AssetManager.hearts, atlasX, 0, heartRectangle);
+	}
 }
 
 int Game::getTextureVariant(int x, int y) {
@@ -549,6 +606,12 @@ void Game::renderImGuiWindows() {
 	ImGui::SliderFloat("Camera Zoom", &m_Camera.zoom, 1, 150);
 	ImGui::SliderFloat("Player Speed", &m_Player.speed(), 5, 100);
 	ImGui::Checkbox("Creative Mode", &m_CreativeMode);
+	if (ImGui::Button("Heal Player")) {
+		m_Player.heal(5.f);
+	}
+	if (ImGui::Button("Damage Player")) {
+		m_Player.takeDamage(5.f);
+	}
 	if (ImGui::Button("Spawn Random Slime")) {
 		int type { getRandomInt(m_Rng, 0, 2) };
 		spawnSlime({ 18, 60 }, static_cast<SlimeType>(type));

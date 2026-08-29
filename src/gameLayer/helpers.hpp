@@ -4,6 +4,8 @@
 #include "physics.hpp"
 #include "raylib.h"
 
+Vector2 getScreenSize();
+
 Rectangle getTextureAtlas(
     int x, int y, int cellSizeX, int cellSizeY, bool flipX = false);
 

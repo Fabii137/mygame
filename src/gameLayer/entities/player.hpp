@@ -37,7 +37,7 @@ private:
 	Item::Type m_ArmorHead { Item::PartyHat };
 	Item::Type m_ArmorChest { Item::GoldChestPlate };
 	Item::Type m_ArmorLegs { Item::IceBoots };
-	Item::Type m_HeldItem { Item::GoldSword };
+	Item::Type m_HeldItem {};
 
 	float m_Speed {};
 	float m_JumpStrength {};
