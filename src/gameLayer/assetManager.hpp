@@ -16,6 +16,7 @@ struct AssetManager {
 	Texture2D iceSlime {};
 	Texture2D zombie {};
 	Texture2D items {};
+	Texture2D hearts {};
 
 	std::unordered_map<int, Texture2D> frontArmor {};
 	std::unordered_map<int, Texture2D> backArmor {};

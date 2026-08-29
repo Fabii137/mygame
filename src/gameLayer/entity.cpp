@@ -26,6 +26,10 @@ void Entity::takeDamage(float damage) {
 	m_HitTimer = HIT_TIMER_DURATION;
 }
 
+void Entity::heal(float amount) {
+	m_Health = std::clamp(m_Health + amount, 0.f, maxHealth());
+}
+
 void Entity::updatePhysics(float dt, GameMap& gameMap, bool applyGravity) {
 	if (applyGravity) {
 		m_Physics.applyGravity();

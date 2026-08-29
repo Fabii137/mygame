@@ -31,6 +31,7 @@ void AssetManager::loadAll(const char* texturePackPath) {
 	load(iceSlime, "iceslime.png");
 	load(zombie, "zombie.png");
 	load(items, "items.png");
+	load(hearts, "hearts.png");
 
 	// backgrounds
 	load(forestMountainsClose, "backgrounds/forest/mountainsClose.png");

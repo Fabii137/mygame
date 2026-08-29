@@ -42,6 +42,7 @@ public:
 	void teleport(Vector2 pos);
 
 	virtual void takeDamage(float damage);
+	virtual void heal(float amount);
 
 	virtual void render(AssetManager& assetManager) const = 0;
 	virtual bool update(float dt, EntityUpdateData& updateData) = 0;

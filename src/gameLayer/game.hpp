@@ -36,6 +36,7 @@ private:
 	void updateBackground(float dt);
 	void render();
 	void renderBackground();
+	void renderPlayerHearts();
 	int getTextureVariant(int x, int y);
 	int getTreeAtlasColumn(int x, int y);
 	Vector2 getMousePosWorld() const;
