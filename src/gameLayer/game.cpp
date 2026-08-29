@@ -485,10 +485,10 @@ void Game::render() {
 
 	EndMode2D();
 
-	renderPlayerHearts();
-
 	Color ambientTint { m_Background.getAmbientTint() };
 	DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), ambientTint);
+
+	renderPlayerHearts();
 }
 
 void Game::renderBackground() {
