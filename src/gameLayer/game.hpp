@@ -37,6 +37,7 @@ private:
 	void render();
 	void renderBackground();
 	void renderPlayerHearts();
+	void renderInventory();
 	int getTextureVariant(int x, int y);
 	int getTreeAtlasColumn(int x, int y);
 	Vector2 getMousePosWorld() const;
@@ -68,5 +69,6 @@ private:
 	EnemySpawner m_EnemySpawner {};
 	AssetManager m_AssetManager {};
 
+	bool m_ShowInventory {};
 	bool m_ShowImGui {};
 };

@@ -85,6 +85,10 @@ EntityType Player::type() const { return EntityType::Player; }
 
 float Player::maxHealth() const { return 10.f; }
 
+Inventory& Player::inventory() { return m_Inventory; }
+
+const Inventory& Player::inventory() const { return m_Inventory; }
+
 void Player::setColliderSize() {
 	m_Physics.transform.w = 0.8f;
 	m_Physics.transform.h = 1.6f;

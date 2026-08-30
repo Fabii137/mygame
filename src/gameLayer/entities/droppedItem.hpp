@@ -18,10 +18,9 @@ public:
 
 	std::uint16_t& itemType();
 	std::uint16_t itemType() const;
-	int& itemCount();
-	int itemCount() const;
+	size_t& itemCount();
+	size_t itemCount() const;
 
-	int maxStackSize() const;
 	Vector2 size() const;
 
 	void setColliderSize() override;
@@ -31,5 +30,5 @@ public:
 
 private:
 	std::uint16_t m_ItemType {};
-	int m_ItemCount { 1 };
+	size_t m_ItemCount { 1 };
 };

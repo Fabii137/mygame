@@ -6,7 +6,8 @@
 #include "helpers.hpp"
 #include "walls.hpp"
 
-Texture getTextureForItemType(std::uint16_t type, AssetManager& assetManager) {
+Texture getTextureForItemType(
+    std::uint16_t type, const AssetManager& assetManager) {
 	if (isBlock(type) || isWall(type)) {
 		// block or wall
 		return assetManager.textures;

@@ -2,6 +2,7 @@
 
 #include "entity.hpp"
 #include "entityAnimation.hpp"
+#include "inventory.hpp"
 #include "items.hpp"
 
 class Player : public Entity {
@@ -15,6 +16,9 @@ public:
 	float maxHealth() const override;
 
 	void setColliderSize() override;
+
+	Inventory& inventory();
+	const Inventory& inventory() const;
 
 	float& speed();
 	float speed() const;
@@ -31,8 +35,11 @@ private:
 private:
 	static constexpr float DEFAULT_SPEED { 10.f };
 	static constexpr float DEFAULT_JUMP_STRENGTH { 10.f };
+	static constexpr size_t INVENTORY_COLS { 9 };
+	static constexpr size_t INVENTORY_SLOTS { 3 * INVENTORY_COLS };
 
 	EntityAnimation m_Animation {};
+	Inventory m_Inventory { INVENTORY_SLOTS, INVENTORY_COLS };
 
 	Item::Type m_ArmorHead { Item::PartyHat };
 	Item::Type m_ArmorChest { Item::GoldChestPlate };
