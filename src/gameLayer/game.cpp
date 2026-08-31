@@ -22,12 +22,15 @@
 #include "gameMap.hpp"
 #include "helpers.hpp"
 #include "imgui.h"
+#include "inventory.hpp"
+#include "inventoryController.hpp"
 #include "items.hpp"
 #include "physics.hpp"
 #include "random.h"
 #include "raylib.h"
 #include "saveMap.hpp"
 #include "settings.hpp"
+#include "ui.hpp"
 #include "walls.hpp"
 #include "worldGenerator.hpp"
 
@@ -42,6 +45,26 @@ struct PendingDrop {
 	EntityType type {};
 };
 
+Rectangle getInventoryRect(const Inventory& inventory) {
+	Vector2 screenSize { getScreenSize() };
+	Rectangle rect {};
+	rect.height = screenSize.y * 0.3f;
+	rect.width = rect.height * inventory.aspectRatio();
+
+	constexpr float padding { 0.01f };
+	float maxWidth { screenSize.x * (1.f - padding * 2) };
+	if (rect.width > maxWidth) {
+		float scaleFactor { maxWidth / rect.width };
+		rect.height *= scaleFactor;
+		rect.width *= scaleFactor;
+	}
+
+	rect = UI::placeRectTopLeft(rect);
+	rect.x += screenSize.x * padding;
+	rect.y += screenSize.y * padding;
+
+	return rect;
+}
 }
 
 void Game::spawnZombie(Vector2 position) {
@@ -100,6 +123,7 @@ bool Game::update() {
 	updateAudio(dt);
 	updateSettings();
 	updatePlayer(dt);
+	updateInventoryController();
 	updateCamera();
 	updateEnemySpawning(dt);
 	updateEntities(dt);
@@ -178,6 +202,15 @@ void Game::updateAudio(float dt) {
 }
 
 void Game::updatePlayer(float dt) {
+	if (IsKeyPressed(KEY_TAB)) {
+		m_ShowInventory = !m_ShowInventory;
+
+		// TODO: move somewhere else once multiple inventories exist
+		if (!m_ShowInventory) {
+			m_InventoryController.onInventoryClosed();
+		}
+	}
+
 	EntityUpdateData updateData {
 		m_Player.position(),
 		m_Rng,
@@ -188,6 +221,16 @@ void Game::updatePlayer(float dt) {
 
 	m_Player.update(dt, updateData);
 	m_Player.updatePhysics(dt, m_GameMap, !m_CreativeMode);
+}
+
+void Game::updateInventoryController() {
+	if (!m_ShowInventory) {
+		return;
+	}
+
+	Rectangle inventoryRect { getInventoryRect(m_Player.inventory()) };
+	InventoryContext context { m_Player.inventory(), inventoryRect };
+	m_InventoryController.update(context);
 }
 
 void Game::updateEntities(float dt) {
@@ -239,6 +282,15 @@ Vector2 Game::getMousePosWorld() const {
 	return GetScreenToWorld2D(GetMousePosition(), m_Camera);
 }
 
+bool Game::canEdit() const {
+	if (m_ShowImGui || !m_ShowInventory) {
+		return !m_ShowImGui;
+	}
+
+	Rectangle inventoryRect { getInventoryRect(m_Player.inventory()) };
+	return !m_Player.inventory().hoveredSlot(inventoryRect).has_value();
+}
+
 bool Game::canPlaceBlock(const MapCell& hoveredCell) {
 	if (!hoveredCell.block) {
 		return false;
@@ -277,7 +329,7 @@ void Game::updateEnemySpawning(float dt) {
 }
 
 void Game::updateWorldEditing() {
-	if (m_ShowImGui) {
+	if (!canEdit()) {
 		return;
 	}
 
@@ -445,18 +497,13 @@ void Game::render() {
 	}
 
 	MapCell hoveredCell { m_GameMap.hoveredCell(getMousePosWorld()) };
-	// drawTexture(m_AssetManager.frame,
-	//             {0.f, 0.f, static_cast<float>(m_AssetManager.frame.width),
-	//              static_cast<float>(m_AssetManager.frame.height)},
-	//             {static_cast<float>(hoveredCell.x),
-	//              static_cast<float>(hoveredCell.y), 1.f, 1.f});
-
-	if (m_EditMode == EditMode::Blocks && hoveredCell.block) {
+	bool canEdit { this->canEdit() };
+	if (m_EditMode == EditMode::Blocks && hoveredCell.block && canEdit) {
 		Rectangle dest { static_cast<float>(hoveredCell.x),
 			static_cast<float>(hoveredCell.y), 1.f, 1.f };
 		drawTextureAtlas(m_AssetManager.textures, m_CreativeSelectedBlock, 0, dest,
 		    Fade(WHITE, 0.5f));
-	} else if (m_EditMode == EditMode::Walls && hoveredCell.wall) {
+	} else if (m_EditMode == EditMode::Walls && hoveredCell.wall && canEdit) {
 		Rectangle dest { static_cast<float>(hoveredCell.x),
 			static_cast<float>(hoveredCell.y), 1.f, 1.f };
 		drawTextureAtlas(m_AssetManager.textures, m_CreativeSelectedWall, 0, dest,
@@ -489,6 +536,10 @@ void Game::render() {
 	DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), ambientTint);
 
 	renderPlayerHearts();
+
+	if (m_ShowInventory) {
+		renderInventory();
+	}
 }
 
 void Game::renderBackground() {
@@ -518,11 +569,10 @@ void Game::renderPlayerHearts() {
 	int hearts { (maxHealth + 1) / 2 };
 	int heartsPerRow { std::min(hearts, maxHeartsPerRow) };
 
-	Rectangle heartsRectangle {};
-	heartsRectangle.height = screenSize.y * 0.05f;
-	heartsRectangle.width = heartsRectangle.height * heartsPerRow;
-	heartsRectangle.x = screenSize.x - heartsRectangle.width;
-	heartsRectangle.y = 0;
+	Rectangle heartsRect {};
+	heartsRect.height = screenSize.y * 0.05f;
+	heartsRect.width = heartsRect.height * heartsPerRow;
+	heartsRect = UI::placeRectTopRight(heartsRect, screenSize.x);
 
 	for (int i {}; i < hearts; i++) {
 		int healthForHeart { health - i * 2 };
@@ -546,13 +596,20 @@ void Game::renderPlayerHearts() {
 
 		int row { i / heartsPerRow };
 		int col { i % heartsPerRow };
-		Rectangle heartRectangle { heartsRectangle };
-		heartRectangle.width = heartRectangle.height;
-		heartRectangle.x += heartRectangle.width * col;
-		heartRectangle.y += heartRectangle.height * row;
+		Rectangle singleHeartRect { heartsRect };
+		singleHeartRect.width = singleHeartRect.height;
+		singleHeartRect.x += singleHeartRect.width * col;
+		singleHeartRect.y += singleHeartRect.height * row;
 
-		drawTextureAtlas(m_AssetManager.hearts, atlasX, 0, heartRectangle);
+		drawTextureAtlas(m_AssetManager.hearts, atlasX, 0, singleHeartRect);
 	}
+}
+
+void Game::renderInventory() {
+	Vector2 screenSize { getScreenSize() };
+	Rectangle inventoryRect { getInventoryRect(m_Player.inventory()) };
+	m_Player.inventory().render(m_AssetManager, inventoryRect);
+	m_InventoryController.render(m_AssetManager);
 }
 
 int Game::getTextureVariant(int x, int y) {

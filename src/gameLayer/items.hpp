@@ -2,15 +2,21 @@
 
 #include <cstdint>
 
+#include <cstddef>
+
 #include "blocks.hpp"
 #include "raylib.h"
 #include "walls.hpp"
 
+#include "nlohmann/json_fwd.hpp"
+
 struct AssetManager;
+using Json = nlohmann::json;
 
 bool isItem(std::uint16_t type);
 bool isBlock(std::uint16_t type);
 bool isWall(std::uint16_t type);
+size_t maxStackSize(std::uint16_t type);
 
 struct Item {
 	enum Type : std::uint16_t {
@@ -77,20 +83,34 @@ struct Item {
 	};
 
 	Type type {};
-	std::uint16_t count { 1 };
+	size_t count {};
 
-	bool isItem() { return ::isItem(type); }
-	bool isBlock() { return ::isBlock(type); }
-	bool isWall() { return ::isWall(type); }
+	size_t maxStackSize() const { return ::maxStackSize(type); }
+
+	bool isItem() const { return ::isItem(type); }
+	bool isBlock() const { return ::isBlock(type); }
+	bool isWall() const { return ::isWall(type); }
+
+	bool empty() const { return !type || !count; }
+
+	Json formatToJson() const;
+	bool loadFromJson(Json& json);
 };
 
-Texture getTextureForItemType(std::uint16_t type, AssetManager& assetManager);
+Texture getTextureForItemType(
+    std::uint16_t type, const AssetManager& assetManager);
 Rectangle getTextureCoordsForItemType(std::uint16_t type);
+
+inline size_t maxStackSize(std::uint16_t type) {
+	if (isBlock(type) || isWall(type)) {
+		return 64;
+	}
+	return 1;
+}
 
 inline bool isItem(std::uint16_t type) {
 	return type >= Wall::WALLS_END && type < Item::LAST_ITEM;
 }
-
 inline bool isWall(std::uint16_t type) {
 	return type >= Block::BLOCKS_END && type < Wall::WALLS_COUNT;
 }

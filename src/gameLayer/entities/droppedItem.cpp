@@ -28,7 +28,7 @@ void DroppedItem::render(AssetManager& assetManager) const {
 }
 
 bool DroppedItem::update(float dt, EntityUpdateData& updateData) {
-	int stackSizeLimit { maxStackSize() };
+	size_t stackSizeLimit { maxStackSize(m_ItemType) };
 	if (m_ItemCount >= stackSizeLimit) {
 		return true;
 	}
@@ -53,7 +53,7 @@ bool DroppedItem::update(float dt, EntityUpdateData& updateData) {
 			continue;
 		}
 
-		int total { other->itemCount() + m_ItemCount };
+		size_t total { other->itemCount() + m_ItemCount };
 		other->itemCount() = std::min(total, stackSizeLimit);
 		m_ItemCount = total - other->itemCount();
 		if (m_ItemCount == 0) {
@@ -66,22 +66,15 @@ bool DroppedItem::update(float dt, EntityUpdateData& updateData) {
 
 EntityType DroppedItem::type() const { return EntityType::DroppedItem; }
 
-int DroppedItem::maxStackSize() const {
-	if (isBlock(m_ItemType) || isWall(m_ItemType)) {
-		return 64;
-	}
-	return 1;
-}
-
 float DroppedItem::maxHealth() const { return 1.f; }
 
 std::uint16_t& DroppedItem::itemType() { return m_ItemType; }
 
 std::uint16_t DroppedItem::itemType() const { return m_ItemType; }
 
-int& DroppedItem::itemCount() { return m_ItemCount; }
+size_t& DroppedItem::itemCount() { return m_ItemCount; }
 
-int DroppedItem::itemCount() const { return m_ItemCount; }
+size_t DroppedItem::itemCount() const { return m_ItemCount; }
 
 Vector2 DroppedItem::size() const {
 	if (isBlock(m_ItemType) || isWall(m_ItemType)) {
@@ -125,7 +118,7 @@ bool DroppedItem::loadFromJson(Json& json) {
 		return false;
 	}
 	m_ItemCount = json["itemCount"];
-	m_ItemCount = std::clamp(m_ItemCount, 0, maxStackSize());
+	m_ItemCount = std::clamp(m_ItemCount, size_t { 0 }, maxStackSize(m_ItemType));
 
 	setColliderSize();
 

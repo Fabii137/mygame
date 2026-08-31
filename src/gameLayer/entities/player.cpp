@@ -85,6 +85,10 @@ EntityType Player::type() const { return EntityType::Player; }
 
 float Player::maxHealth() const { return 10.f; }
 
+Inventory& Player::inventory() { return m_Inventory; }
+
+const Inventory& Player::inventory() const { return m_Inventory; }
+
 void Player::setColliderSize() {
 	m_Physics.transform.w = 0.8f;
 	m_Physics.transform.h = 1.6f;
@@ -138,6 +142,7 @@ Json Player::formatToJson() const {
 
 	json["speed"] = m_Speed;
 	json["jumpStrength"] = m_JumpStrength;
+	json["inventory"] = m_Inventory.formatToJson();
 
 	return json;
 }
@@ -155,6 +160,13 @@ bool Player::loadFromJson(Json& json) {
 
 	if (json.contains("jumpStrength") && json["jumpStrength"].is_number()) {
 		m_JumpStrength = json["jumpStrength"];
+	}
+
+	if (json.contains("inventory")) {
+		auto inventoryJson = json["inventory"];
+		if (!m_Inventory.loadFromJson(json)) {
+			return false;
+		}
 	}
 
 	setColliderSize();

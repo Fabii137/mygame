@@ -4,6 +4,9 @@
 #include "physics.hpp"
 #include "raylib.h"
 
+struct AssetManager;
+struct Item;
+
 Vector2 getScreenSize();
 
 Rectangle getTextureAtlas(
@@ -21,3 +24,6 @@ void drawTextureAtlas(const Texture2D& texture, int atlasX, int atlasY,
     int cellSizeY = Constants::CELL_SIZE);
 void drawTexture(const Texture2D& texture, Rectangle src, Rectangle dest,
     Color tint = WHITE);
+
+void drawItemStack(
+    const AssetManager& assetManager, const Rectangle& rect, const Item& stack);
