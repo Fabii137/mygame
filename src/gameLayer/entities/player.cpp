@@ -142,6 +142,7 @@ Json Player::formatToJson() const {
 
 	json["speed"] = m_Speed;
 	json["jumpStrength"] = m_JumpStrength;
+	json["inventory"] = m_Inventory.formatToJson();
 
 	return json;
 }
@@ -159,6 +160,11 @@ bool Player::loadFromJson(Json& json) {
 
 	if (json.contains("jumpStrength") && json["jumpStrength"].is_number()) {
 		m_JumpStrength = json["jumpStrength"];
+	}
+
+	auto inventoryJson = json["inventory"];
+	if (!m_Inventory.loadFromJson(inventoryJson)) {
+		return false;
 	}
 
 	setColliderSize();

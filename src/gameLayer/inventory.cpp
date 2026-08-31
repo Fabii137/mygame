@@ -5,6 +5,8 @@
 #include "helpers.hpp"
 #include "ui.hpp"
 
+#include "nlohmann/json.hpp"
+
 Inventory::Inventory(size_t slots, size_t cols)
     : m_Cols(cols) {
 	permaAssertCommentDevelopment(m_Cols > 0, "Inventory can't have 0 columns");
@@ -59,7 +61,7 @@ std::optional<size_t> Inventory::hoveredSlot(Rectangle bounds) const {
 	Vector2 mousePos { GetMousePosition() };
 	std::optional<size_t> result {};
 
-	forEachCell(bounds, [&](size_t i, size_t j, Rectangle cell) {
+	forEachCell(bounds, [&](size_t i, size_t j, const Rectangle& cell) {
 		if (CheckCollisionPointRec(mousePos, cell)) {
 			result = i * m_Cols + j;
 		}
@@ -126,7 +128,7 @@ void Inventory::render(
 
 	DrawRectangleRec(bounds, { 100, 100, 100, 100 });
 
-	forEachCell(bounds, [&](size_t i, size_t j, Rectangle cell) {
+	forEachCell(bounds, [&](size_t i, size_t j, const Rectangle& cell) {
 		Rectangle src { 0.f, 0.f, static_cast<float>(assetManager.frame.width),
 			static_cast<float>(assetManager.frame.height) };
 		if (CheckCollisionPointRec(GetMousePosition(), cell)) {
@@ -140,14 +142,66 @@ void Inventory::render(
 	});
 }
 
+void Inventory::renderItemStack(const AssetManager& assetManager,
+    const Rectangle& cellRect, const Item& stack) const {
+	if (!stack.type) {
+		return;
+	}
+	Texture2D texture { getTextureForItemType(stack.type, assetManager) };
+	Rectangle source { getTextureCoordsForItemType(stack.type) };
+
+	Rectangle itemRect { UI::shrinkRectPercentage(cellRect, PADDING, PADDING) };
+	drawTexture(texture, source, itemRect);
+
+	if (stack.count > 1) {
+		int textX { static_cast<int>(cellRect.x + cellRect.width * 0.6f) };
+		int textY { static_cast<int>(cellRect.y + cellRect.height * 0.7f) };
+		DrawText(TextFormat("%u", stack.count), textX, textY, 20, WHITE);
+	}
+}
+
+Json Inventory::formatToJson() const {
+	Json json {};
+
+	Json itemsJson = Json::array();
+	for (const Item& item : m_Items) {
+		itemsJson.push_back(item.formatToJson());
+	}
+	json["items"] = itemsJson;
+
+	return json;
+}
+
+bool Inventory::loadFromJson(Json& json) {
+	if (!json.is_object()) {
+		return false;
+	}
+
+	if (!json.contains("items") || !json["items"].is_array()) {
+		return false;
+	}
+
+	for (Json& itemJson : json["items"]) {
+		Item item {};
+
+		if (!item.loadFromJson(itemJson)) {
+			m_Items.push_back({});
+			continue;
+		}
+
+		m_Items.push_back(item);
+	}
+
+	return true;
+}
+
 size_t Inventory::size() const { return m_Items.size(); }
 
 Item& Inventory::slot(size_t index) { return m_Items.at(index); }
 
 const Item& Inventory::slot(size_t index) const { return m_Items.at(index); }
 
-void Inventory::forEachCell(Rectangle bounds,
-    std::function<void(size_t, size_t, Rectangle)> func) const {
+void Inventory::forEachCell(Rectangle bounds, CellFunc func) const {
 	size_t rows { this->rows() };
 
 	bounds = UI::shrinkRectPercentage(bounds, PADDING, PADDING);
@@ -173,22 +227,4 @@ void Inventory::forEachCell(Rectangle bounds,
 
 size_t Inventory::rows() const {
 	return (m_Items.size() + m_Cols - 1) / m_Cols;
-}
-
-void Inventory::renderItemStack(const AssetManager& assetManager,
-    const Rectangle& cellRect, const Item& stack) const {
-	if (!stack.type) {
-		return;
-	}
-	Texture2D texture { getTextureForItemType(stack.type, assetManager) };
-	Rectangle source { getTextureCoordsForItemType(stack.type) };
-
-	Rectangle itemRect { UI::shrinkRectPercentage(cellRect, PADDING, PADDING) };
-	drawTexture(texture, source, itemRect);
-
-	if (stack.count > 1) {
-		int textX { static_cast<int>(cellRect.x + cellRect.width * 0.6f) };
-		int textY { static_cast<int>(cellRect.y + cellRect.height * 0.7f) };
-		DrawText(TextFormat("%u", stack.count), textX, textY, 20, WHITE);
-	}
 }

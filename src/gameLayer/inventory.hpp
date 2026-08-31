@@ -8,7 +8,11 @@
 #include "items.hpp"
 #include "raylib.h"
 
+#include "nlohmann/json_fwd.hpp"
+
 struct AssetManager;
+
+using Json = nlohmann::json;
 
 class Inventory {
 public:
@@ -28,9 +32,12 @@ public:
 
 	std::optional<size_t> hoveredSlot(Rectangle bounds) const;
 
+	Json formatToJson() const;
+	bool loadFromJson(Json& json);
+
 private:
-	void forEachCell(Rectangle bounds,
-	    std::function<void(size_t, size_t, Rectangle)> func) const;
+	using CellFunc = std::function<void(size_t, size_t, const Rectangle&)>;
+	void forEachCell(Rectangle bounds, CellFunc func) const;
 
 	size_t rows() const;
 

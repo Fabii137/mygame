@@ -6,7 +6,10 @@
 #include "raylib.h"
 #include "walls.hpp"
 
+#include "nlohmann/json_fwd.hpp"
+
 struct AssetManager;
+using Json = nlohmann::json;
 
 bool isItem(std::uint16_t type);
 bool isBlock(std::uint16_t type);
@@ -87,6 +90,9 @@ struct Item {
 	bool isWall() const { return ::isWall(type); }
 
 	bool empty() const { return !type || !count; }
+
+	Json formatToJson() const;
+	bool loadFromJson(Json& json);
 };
 
 Texture getTextureForItemType(
