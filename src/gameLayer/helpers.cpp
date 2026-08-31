@@ -64,7 +64,7 @@ void drawTexture(
 
 void drawItemStack(const AssetManager& assetManager, const Rectangle& rect,
     const Item& stack) {
-	if (!stack.empty()) {
+	if (stack.empty()) {
 		return;
 	}
 	constexpr float padding { 0.1f };
