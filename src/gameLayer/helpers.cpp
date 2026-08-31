@@ -1,7 +1,10 @@
 #include "helpers.hpp"
 
+#include "assetManager.hpp"
+#include "items.hpp"
 #include "physics.hpp"
 #include "raylib.h"
+#include "ui.hpp"
 
 Vector2 getScreenSize() {
 	return {
@@ -57,4 +60,24 @@ void drawTextureAtlas(const Texture2D& texture, int atlasX, int atlasY,
 void drawTexture(
     const Texture2D& texture, Rectangle src, Rectangle dest, Color tint) {
 	DrawTexturePro(texture, src, dest, {}, 0.f, tint);
+}
+
+void drawItemStack(const AssetManager& assetManager, const Rectangle& rect,
+    const Item& stack) {
+	if (!stack.type) {
+		return;
+	}
+	constexpr float padding { 0.1f };
+
+	Texture2D texture { getTextureForItemType(stack.type, assetManager) };
+	Rectangle source { getTextureCoordsForItemType(stack.type) };
+
+	Rectangle itemRect { UI::shrinkRectPercentage(rect, padding, padding) };
+	drawTexture(texture, source, itemRect);
+
+	if (stack.count > 1) {
+		int textX { static_cast<int>(rect.x + rect.width * 0.6f) };
+		int textY { static_cast<int>(rect.y + rect.height * 0.7f) };
+		DrawText(TextFormat("%u", stack.count), textX, textY, 20, WHITE);
+	}
 }

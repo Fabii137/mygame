@@ -3,9 +3,11 @@
 #include "asserts.h"
 #include "assetManager.hpp"
 #include "helpers.hpp"
+#include "raylib.h"
 #include "ui.hpp"
 
 #include "nlohmann/json.hpp"
+#include <utility>
 
 Inventory::Inventory(size_t slots, size_t cols)
     : m_Cols(cols) {
@@ -26,7 +28,7 @@ int Inventory::add(Item items) {
 		return items.count;
 	}
 
-	// try non-empty stacks
+	// try non-empty slots
 	for (Item& stack : m_Items) {
 		if (stack.type != items.type) {
 			continue;
@@ -69,41 +71,17 @@ std::optional<size_t> Inventory::hoveredSlot(Rectangle bounds) const {
 	return result;
 }
 
-bool Inventory::move(size_t from, size_t to) {
-	if (from >= m_Items.size() || to >= m_Items.size()) {
-		return false;
-	}
-
-	std::swap(m_Items[from], m_Items[to]);
-	return true;
-}
-
-Item Inventory::take(size_t slot, size_t count) {
-	if (slot >= m_Items.size() || count <= 0) {
-		return {};
-	}
-
-	Item& stored { m_Items[slot] };
-	if (stored.empty()) {
-		return {};
-	}
-
-	size_t takenCount { std::min(count, stored.count) };
-	Item result { stored.type, takenCount };
-	stored.count -= result.count;
-	if (stored.count == 0) {
-		stored.type = {};
-	}
-	return result;
-}
-
-Item Inventory::insert(size_t slot, Item stack) {
+Item Inventory::insert(size_t slot, Item stack, bool single) {
 	if (slot >= m_Items.size() || stack.empty()) {
 		return stack;
 	}
 
 	Item& stored { m_Items[slot] };
 	if (!stored.empty() && stored.type != stack.type) {
+		if (!single) {
+			// swap items if using the whole stack
+			std::swap(stored, stack);
+		}
 		return stack;
 	}
 
@@ -111,11 +89,13 @@ Item Inventory::insert(size_t slot, Item stack) {
 		stored.type = stack.type;
 	}
 
+	size_t count { single ? 1 : stack.count };
+
 	size_t available { maxStackSize(stored.type) - stored.count };
-	size_t inserted { std::min(available, stack.count) };
+	size_t inserted { std::min(available, count) };
 	stored.count += inserted;
 	stack.count -= inserted;
-	if (stack.count == 0) {
+	if (stack.empty()) {
 		stack.type = {};
 	}
 	return stack;
@@ -123,7 +103,6 @@ Item Inventory::insert(size_t slot, Item stack) {
 
 void Inventory::render(
     const AssetManager& assetManager, Rectangle bounds) const {
-	constexpr float padding { 0.1f };
 	Vector2 screenSize { getScreenSize() };
 
 	DrawRectangleRec(bounds, { 100, 100, 100, 100 });
@@ -138,26 +117,8 @@ void Inventory::render(
 		}
 
 		const Item& stack { m_Items[i * m_Cols + j] };
-		renderItemStack(assetManager, cell, stack);
+		drawItemStack(assetManager, cell, stack);
 	});
-}
-
-void Inventory::renderItemStack(const AssetManager& assetManager,
-    const Rectangle& cellRect, const Item& stack) const {
-	if (!stack.type) {
-		return;
-	}
-	Texture2D texture { getTextureForItemType(stack.type, assetManager) };
-	Rectangle source { getTextureCoordsForItemType(stack.type) };
-
-	Rectangle itemRect { UI::shrinkRectPercentage(cellRect, PADDING, PADDING) };
-	drawTexture(texture, source, itemRect);
-
-	if (stack.count > 1) {
-		int textX { static_cast<int>(cellRect.x + cellRect.width * 0.6f) };
-		int textY { static_cast<int>(cellRect.y + cellRect.height * 0.7f) };
-		DrawText(TextFormat("%u", stack.count), textX, textY, 20, WHITE);
-	}
 }
 
 Json Inventory::formatToJson() const {
@@ -173,6 +134,8 @@ Json Inventory::formatToJson() const {
 }
 
 bool Inventory::loadFromJson(Json& json) {
+	m_Items.clear();
+
 	if (!json.is_object()) {
 		return false;
 	}
@@ -193,6 +156,19 @@ bool Inventory::loadFromJson(Json& json) {
 	}
 
 	return true;
+}
+
+float Inventory::cellSize(Rectangle bounds) const {
+	bounds = UI::shrinkRectPercentage(bounds, PADDING, PADDING);
+
+	Rectangle cellRect {};
+	cellRect.height = bounds.height / rows();
+	cellRect.width = cellRect.height;
+	cellRect.x = 0.f;
+	cellRect.y = 0.f;
+
+	cellRect = UI::shrinkRectPercentage(cellRect, PADDING, PADDING);
+	return cellRect.width;
 }
 
 size_t Inventory::size() const { return m_Items.size(); }

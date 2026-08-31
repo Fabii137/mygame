@@ -9,6 +9,7 @@
 #include "enemySpawner.hpp"
 #include "entityHolder.hpp"
 #include "gameMap.hpp"
+#include "inventoryController.hpp"
 #include "raylib.h"
 #include "structure.hpp"
 #include "worldGenerator.hpp"
@@ -28,6 +29,7 @@ private:
 	void spawnDroppedItem(Vector2 position, std::uint16_t type);
 	void updateAudio(float dt);
 	void updatePlayer(float dt);
+	void updateInventoryController();
 	void updateCamera();
 	void updateEntities(float dt);
 	void updateEnemySpawning(float dt);
@@ -68,6 +70,7 @@ private:
 	EntityHolder m_Entities {};
 	EnemySpawner m_EnemySpawner {};
 	AssetManager m_AssetManager {};
+	InventoryController m_InventoryController {};
 
 	bool m_ShowInventory {};
 	bool m_ShowImGui {};

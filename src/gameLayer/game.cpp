@@ -22,6 +22,7 @@
 #include "gameMap.hpp"
 #include "helpers.hpp"
 #include "imgui.h"
+#include "inventoryController.hpp"
 #include "items.hpp"
 #include "physics.hpp"
 #include "random.h"
@@ -129,6 +130,7 @@ bool Game::update() {
 	updateAudio(dt);
 	updateSettings();
 	updatePlayer(dt);
+	updateInventoryController();
 	updateCamera();
 	updateEnemySpawning(dt);
 	updateEntities(dt);
@@ -209,6 +211,11 @@ void Game::updateAudio(float dt) {
 void Game::updatePlayer(float dt) {
 	if (IsKeyPressed(KEY_TAB)) {
 		m_ShowInventory = !m_ShowInventory;
+
+		// TODO: move somewhere else once multiple inventories exist
+		if (!m_ShowInventory) {
+			m_InventoryController.onInventoryClosed();
+		}
 	}
 
 	EntityUpdateData updateData {
@@ -221,6 +228,16 @@ void Game::updatePlayer(float dt) {
 
 	m_Player.update(dt, updateData);
 	m_Player.updatePhysics(dt, m_GameMap, !m_CreativeMode);
+}
+
+void Game::updateInventoryController() {
+	if (!m_ShowInventory) {
+		return;
+	}
+
+	InventoryContext context { m_Player.inventory(),
+		getInventoryRect(getScreenSize()) };
+	m_InventoryController.update(m_AssetManager, context);
 }
 
 void Game::updateEntities(float dt) {
@@ -594,6 +611,7 @@ void Game::renderPlayerHearts() {
 void Game::renderInventory() {
 	Vector2 screenSize { getScreenSize() };
 	m_Player.inventory().render(m_AssetManager, getInventoryRect(screenSize));
+	m_InventoryController.render(m_AssetManager);
 }
 
 int Game::getTextureVariant(int x, int y) {

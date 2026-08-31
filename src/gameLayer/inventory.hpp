@@ -19,11 +19,12 @@ public:
 	Inventory(size_t slots, size_t cols);
 
 	int add(Item items);
-	bool move(size_t from, size_t to);
-	Item take(size_t slot, size_t count);
-	Item insert(size_t slot, Item stack);
+	// single = only insert one item
+	Item insert(size_t slot, Item stack, bool single = false);
 
 	void render(const AssetManager& assetManager, Rectangle bounds) const;
+
+	float cellSize(Rectangle bounds) const;
 
 	size_t size() const;
 
@@ -40,9 +41,6 @@ private:
 	void forEachCell(Rectangle bounds, CellFunc func) const;
 
 	size_t rows() const;
-
-	void renderItemStack(const AssetManager& assetManager,
-	    const Rectangle& cellRect, const Item& stack) const;
 
 private:
 	static constexpr float PADDING { 0.1f };
