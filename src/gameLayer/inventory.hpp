@@ -18,7 +18,7 @@ class Inventory {
 public:
 	Inventory(size_t slots, size_t cols);
 
-	int add(Item items);
+	size_t add(Item items);
 	// single = only insert one item
 	Item insert(size_t slot, Item stack, bool single = false);
 

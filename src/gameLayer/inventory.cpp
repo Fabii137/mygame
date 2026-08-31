@@ -24,7 +24,7 @@ Inventory::Inventory(size_t slots, size_t cols)
 	// }
 }
 
-int Inventory::add(Item items) {
+size_t Inventory::add(Item items) {
 	if (items.empty()) {
 		return items.count;
 	}
@@ -104,8 +104,6 @@ Item Inventory::insert(size_t slot, Item stack, bool single) {
 
 void Inventory::render(
     const AssetManager& assetManager, Rectangle bounds) const {
-	Vector2 screenSize { getScreenSize() };
-
 	DrawRectangleRec(bounds, { 100, 100, 100, 100 });
 
 	forEachCell(bounds, [&](size_t i, size_t j, const Rectangle& cell) {
@@ -118,10 +116,6 @@ void Inventory::render(
 		}
 
 		const Item& stack { m_Items[i * m_Cols + j] };
-		if (stack.empty()) {
-			return;
-		}
-
 		drawItemStack(assetManager, cell, stack);
 	});
 }

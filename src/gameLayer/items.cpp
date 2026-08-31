@@ -56,8 +56,15 @@ bool Item::loadFromJson(Json& json) {
 		return false;
 	}
 
-	type = static_cast<Type>(json["type"]);
-	count = json["count"];
+	std::uint16_t rawType = json["type"];
+	type = static_cast<Type>(rawType);
+
+	size_t count = json["count"];
+	if (count > ::maxStackSize(type)) {
+		count = ::maxStackSize(type);
+	}
+	if (count == 0)
+		type = {};
 
 	return true;
 }

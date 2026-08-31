@@ -73,7 +73,7 @@ void InventoryController::onInventoryClosed() {
 		if (sourceSlot.empty()) {
 			sourceSlot = m_DragState.draggedItem;
 		} else {
-			int leftover = src->add(m_DragState.draggedItem);
+			size_t leftover { src->add(m_DragState.draggedItem) };
 			if (leftover > 0) {
 				// TODO: could not add; drop items
 			}

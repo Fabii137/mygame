@@ -162,9 +162,11 @@ bool Player::loadFromJson(Json& json) {
 		m_JumpStrength = json["jumpStrength"];
 	}
 
-	auto inventoryJson = json["inventory"];
-	if (!m_Inventory.loadFromJson(inventoryJson)) {
-		return false;
+	if (json.contains("inventory")) {
+		auto inventoryJson = json["inventory"];
+		if (!m_Inventory.loadFromJson(json)) {
+			return false;
+		}
 	}
 
 	setColliderSize();

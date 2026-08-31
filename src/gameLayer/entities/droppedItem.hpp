@@ -2,6 +2,8 @@
 
 #include <cstdint>
 
+#include <cstddef>
+
 #include "entity.hpp"
 
 class DroppedItem : public Entity {

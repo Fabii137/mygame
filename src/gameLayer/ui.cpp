@@ -10,7 +10,7 @@ Rectangle placeRectTopRight(Rectangle rect, float screenWidth) {
 
 Rectangle placeRectCenterBottom(Rectangle rect, Vector2 screenSize) {
 	rect.x = (screenSize.x - rect.width) / 2.f;
-	rect.y = screenSize.y - rect.width;
+	rect.y = screenSize.y - rect.height;
 	return rect;
 }
 

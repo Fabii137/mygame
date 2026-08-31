@@ -2,6 +2,8 @@
 
 #include <cstdint>
 
+#include <cstddef>
+
 #include "blocks.hpp"
 #include "raylib.h"
 #include "walls.hpp"
