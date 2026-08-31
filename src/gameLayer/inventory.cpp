@@ -104,7 +104,6 @@ Item Inventory::insert(size_t slot, Item stack, bool single) {
 
 void Inventory::render(
     const AssetManager& assetManager, Rectangle bounds) const {
-	DrawRectangleRec(bounds, { 100, 100, 100, 100 });
 
 	forEachCell(bounds, [&](size_t i, size_t j, const Rectangle& cell) {
 		Rectangle src { 0.f, 0.f, static_cast<float>(assetManager.frame.width),
