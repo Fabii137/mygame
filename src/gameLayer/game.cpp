@@ -22,6 +22,7 @@
 #include "gameMap.hpp"
 #include "helpers.hpp"
 #include "imgui.h"
+#include "inventory.hpp"
 #include "inventoryController.hpp"
 #include "items.hpp"
 #include "physics.hpp"
@@ -44,10 +45,11 @@ struct PendingDrop {
 	EntityType type {};
 };
 
-Rectangle getInventoryRect(Vector2 screenSize) {
+Rectangle getInventoryRect(const Inventory& inventory) {
+	Vector2 screenSize { getScreenSize() };
 	Rectangle rect {};
 	rect.height = screenSize.y * 0.3f;
-	rect.width = rect.height * 3;
+	rect.width = rect.height * inventory.aspectRatio();
 
 	constexpr float padding { 0.01f };
 	float maxWidth { screenSize.x * (1.f - padding * 2) };
@@ -62,15 +64,6 @@ Rectangle getInventoryRect(Vector2 screenSize) {
 	rect.y += screenSize.y * padding;
 
 	return rect;
-}
-
-bool isMouseInsideInventory(Vector2 screenSize, bool inventoryShowing) {
-	if (!inventoryShowing) {
-		return false;
-	}
-
-	Rectangle inventoryRect { getInventoryRect(screenSize) };
-	return CheckCollisionPointRec(GetMousePosition(), inventoryRect);
 }
 }
 
@@ -235,9 +228,9 @@ void Game::updateInventoryController() {
 		return;
 	}
 
-	InventoryContext context { m_Player.inventory(),
-		getInventoryRect(getScreenSize()) };
-	m_InventoryController.update(m_AssetManager, context);
+	Rectangle inventoryRect { getInventoryRect(m_Player.inventory()) };
+	InventoryContext context { m_Player.inventory(), inventoryRect };
+	m_InventoryController.update(context);
 }
 
 void Game::updateEntities(float dt) {
@@ -289,6 +282,15 @@ Vector2 Game::getMousePosWorld() const {
 	return GetScreenToWorld2D(GetMousePosition(), m_Camera);
 }
 
+bool Game::canEdit() const {
+	if (m_ShowImGui || !m_ShowInventory) {
+		return !m_ShowImGui;
+	}
+
+	Rectangle inventoryRect { getInventoryRect(m_Player.inventory()) };
+	return !m_Player.inventory().hoveredSlot(inventoryRect).has_value();
+}
+
 bool Game::canPlaceBlock(const MapCell& hoveredCell) {
 	if (!hoveredCell.block) {
 		return false;
@@ -327,12 +329,7 @@ void Game::updateEnemySpawning(float dt) {
 }
 
 void Game::updateWorldEditing() {
-	if (m_ShowImGui) {
-		return;
-	}
-
-	bool canEdit { !isMouseInsideInventory(getScreenSize(), m_ShowInventory) };
-	if (!canEdit) {
+	if (!canEdit()) {
 		return;
 	}
 
@@ -500,7 +497,7 @@ void Game::render() {
 	}
 
 	MapCell hoveredCell { m_GameMap.hoveredCell(getMousePosWorld()) };
-	bool canEdit { !isMouseInsideInventory(screenSize, m_ShowInventory) };
+	bool canEdit { this->canEdit() };
 	if (m_EditMode == EditMode::Blocks && hoveredCell.block && canEdit) {
 		Rectangle dest { static_cast<float>(hoveredCell.x),
 			static_cast<float>(hoveredCell.y), 1.f, 1.f };
@@ -610,7 +607,8 @@ void Game::renderPlayerHearts() {
 
 void Game::renderInventory() {
 	Vector2 screenSize { getScreenSize() };
-	m_Player.inventory().render(m_AssetManager, getInventoryRect(screenSize));
+	Rectangle inventoryRect { getInventoryRect(m_Player.inventory()) };
+	m_Player.inventory().render(m_AssetManager, inventoryRect);
 	m_InventoryController.render(m_AssetManager);
 }
 

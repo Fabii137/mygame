@@ -36,7 +36,7 @@ private:
 	static constexpr float DEFAULT_SPEED { 10.f };
 	static constexpr float DEFAULT_JUMP_STRENGTH { 10.f };
 	static constexpr size_t INVENTORY_COLS { 9 };
-	static constexpr size_t INVENTORY_SLOTS { 3 * INVENTORY_COLS };
+	static constexpr size_t INVENTORY_SLOTS { 4 * INVENTORY_COLS };
 
 	EntityAnimation m_Animation {};
 	Inventory m_Inventory { INVENTORY_SLOTS, INVENTORY_COLS };

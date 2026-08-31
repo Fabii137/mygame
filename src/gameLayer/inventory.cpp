@@ -1,3 +1,5 @@
+#include <utility>
+
 #include "inventory.hpp"
 
 #include "asserts.h"
@@ -7,7 +9,6 @@
 #include "ui.hpp"
 
 #include "nlohmann/json.hpp"
-#include <utility>
 
 Inventory::Inventory(size_t slots, size_t cols)
     : m_Cols(cols) {
@@ -15,7 +16,7 @@ Inventory::Inventory(size_t slots, size_t cols)
 
 	m_Items.resize(slots);
 
-	for (size_t i {}; i < slots; i++) {
+	for (size_t i {}; i < slots; i += 2) {
 		std::uint16_t type { static_cast<std::uint16_t>(i + 1) };
 		size_t count { static_cast<size_t>(((i + 1) * 20) % maxStackSize(type)) };
 		m_Items[i].type = static_cast<Item::Type>(type);
@@ -117,6 +118,10 @@ void Inventory::render(
 		}
 
 		const Item& stack { m_Items[i * m_Cols + j] };
+		if (stack.empty()) {
+			return;
+		}
+
 		drawItemStack(assetManager, cell, stack);
 	});
 }
@@ -169,6 +174,14 @@ float Inventory::cellSize(Rectangle bounds) const {
 
 	cellRect = UI::shrinkRectPercentage(cellRect, PADDING, PADDING);
 	return cellRect.width;
+}
+
+float Inventory::aspectRatio() const {
+	if (m_Items.empty()) {
+		return 1.f;
+	}
+
+	return static_cast<float>(m_Cols) / static_cast<float>(rows());
 }
 
 size_t Inventory::size() const { return m_Items.size(); }

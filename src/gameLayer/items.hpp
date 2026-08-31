@@ -81,7 +81,7 @@ struct Item {
 	};
 
 	Type type {};
-	size_t count { 1 };
+	size_t count {};
 
 	size_t maxStackSize() const { return ::maxStackSize(type); }
 

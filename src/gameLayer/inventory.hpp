@@ -25,6 +25,7 @@ public:
 	void render(const AssetManager& assetManager, Rectangle bounds) const;
 
 	float cellSize(Rectangle bounds) const;
+	float aspectRatio() const;
 
 	size_t size() const;
 

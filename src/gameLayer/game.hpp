@@ -43,6 +43,7 @@ private:
 	int getTextureVariant(int x, int y);
 	int getTreeAtlasColumn(int x, int y);
 	Vector2 getMousePosWorld() const;
+	bool canEdit() const;
 	bool canPlaceBlock(const MapCell& hoveredCell);
 	void renderImGuiWindows();
 
