@@ -43,6 +43,8 @@ private:
 
 	size_t rows() const;
 
+	void renderItemTooltip(size_t slot) const;
+
 private:
 	static constexpr float PADDING { 0.1f };
 	std::vector<Item> m_Items {};

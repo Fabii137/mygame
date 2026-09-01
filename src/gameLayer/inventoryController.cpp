@@ -66,9 +66,9 @@ void InventoryController::onInventoryClosed() {
 		return;
 	}
 
-	Inventory* src = m_DragState.sourceInventory;
+	Inventory* src { m_DragState.sourceInventory };
 	if (src) {
-		Item& sourceSlot = src->slot(m_DragState.sourceSlot);
+		Item& sourceSlot { src->slot(m_DragState.sourceSlot) };
 
 		if (sourceSlot.empty()) {
 			sourceSlot = m_DragState.draggedItem;

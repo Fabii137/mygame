@@ -16,12 +16,12 @@ Inventory::Inventory(size_t slots, size_t cols)
 
 	m_Items.resize(slots);
 
-	// for (size_t i {}; i < slots; i += 2) {
-	// 	std::uint16_t type { static_cast<std::uint16_t>(i + 1) };
-	// 	size_t count { static_cast<size_t>(((i + 1) * 20) % maxStackSize(type)) };
-	// 	m_Items[i].type = static_cast<Item::Type>(type);
-	// 	m_Items[i].count = count;
-	// }
+	for (size_t i {}; i < slots; i += 2) {
+		std::uint16_t type { static_cast<std::uint16_t>(i + 1) };
+		size_t count { static_cast<size_t>(((i + 1) * 20) % maxStackSize(type)) };
+		m_Items[i].type = static_cast<Item::Type>(type);
+		m_Items[i].count = count;
+	}
 }
 
 size_t Inventory::add(Item items) {
@@ -36,7 +36,7 @@ size_t Inventory::add(Item items) {
 		}
 
 		size_t total { stack.count + items.count };
-		stack.count = std::min(total, maxStackSize(stack.type));
+		stack.count = std::min(total, stack.maxStackSize());
 		items.count = total - stack.count;
 		if (items.count == 0) {
 			return 0;
@@ -50,7 +50,7 @@ size_t Inventory::add(Item items) {
 		}
 
 		stack.type = items.type;
-		stack.count = std::min(items.count, maxStackSize(items.type));
+		stack.count = std::min(items.count, items.maxStackSize());
 		items.count -= stack.count;
 		if (items.count == 0) {
 			return 0;
@@ -92,7 +92,7 @@ Item Inventory::insert(size_t slot, Item stack, bool single) {
 
 	size_t count { single ? 1 : stack.count };
 
-	size_t available { maxStackSize(stored.type) - stored.count };
+	size_t available { stored.maxStackSize() - stored.count };
 	size_t inserted { std::min(available, count) };
 	stored.count += inserted;
 	stack.count -= inserted;
@@ -108,15 +108,37 @@ void Inventory::render(
 	forEachCell(bounds, [&](size_t i, size_t j, const Rectangle& cell) {
 		Rectangle src { 0.f, 0.f, static_cast<float>(assetManager.frame.width),
 			static_cast<float>(assetManager.frame.height) };
-		if (CheckCollisionPointRec(GetMousePosition(), cell)) {
+		const Item& stack { m_Items[i * m_Cols + j] };
+
+		bool hovered { CheckCollisionPointRec(GetMousePosition(), cell) };
+		if (hovered) {
 			drawTexture(assetManager.frame, src, cell, { 220, 250, 220, 250 });
 		} else {
 			drawTexture(assetManager.frame, src, cell, { 180, 180, 200, 240 });
 		}
 
-		const Item& stack { m_Items[i * m_Cols + j] };
 		drawItemStack(assetManager, cell, stack);
 	});
+
+	if (auto slot = hoveredSlot(bounds)) {
+		renderItemTooltip(slot.value());
+	}
+}
+
+void Inventory::renderItemTooltip(size_t slot) const {
+	const Item& stack { this->slot(slot) };
+	if (stack.empty()) {
+		return;
+	}
+
+	Vector2 mousePos = GetMousePosition();
+
+	std::string tooltip = stack.name();
+	if (stack.count > 1) {
+		tooltip += " x" + std::to_string(stack.count);
+	}
+
+	DrawText(tooltip.c_str(), mousePos.x + 16.f, mousePos.y + 16.f, 18, WHITE);
 }
 
 Json Inventory::formatToJson() const {
