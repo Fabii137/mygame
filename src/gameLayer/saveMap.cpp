@@ -184,7 +184,7 @@ bool loadBiomes(std::vector<Biome>& biomes, int mapWidth) {
 }
 
 void writeEntities(const EntityHolder& entities) {
-	Json json {};
+	Json json = Json::object();
 
 	for (const auto& [id, entity] : entities.entities) {
 		json[std::to_string(id)] = entity->formatToJson();
