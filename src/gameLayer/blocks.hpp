@@ -35,7 +35,7 @@ struct Block {
 		Glass,
 		Furnace,
 		Painting,
-		Sappling,
+		Sapling,
 		SnowBlueRuby,
 		BlueRubyBlock,
 		Door,
@@ -84,7 +84,7 @@ struct Block {
 		case Platform:
 		case WorkBench:
 		case Painting:
-		case Sappling:
+		case Sapling:
 		case Door:
 		case Jar:
 		case Table:
@@ -118,7 +118,7 @@ inline bool isCollidable(std::uint16_t type) {
 	case Block::Platform:
 	case Block::WorkBench:
 	case Block::Painting:
-	case Block::Sappling:
+	case Block::Sapling:
 	case Block::Door:
 	case Block::Jar:
 	case Block::Table:

@@ -19,7 +19,7 @@ struct Wall {
 		SandWall,
 		StoneBricksWall,
 		RubyBlockWall,
-		HeroglyphWall,
+		HieroglyphWall,
 		BlueRubyWall,
 		PlankedWall,
 		SnowBrickWall,

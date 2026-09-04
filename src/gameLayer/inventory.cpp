@@ -1,3 +1,4 @@
+#include <string>
 #include <utility>
 
 #include "inventory.hpp"
@@ -36,7 +37,7 @@ size_t Inventory::add(Item items) {
 		}
 
 		size_t total { stack.count + items.count };
-		stack.count = std::min(total, maxStackSize(stack.type));
+		stack.count = std::min(total, stack.maxStackSize());
 		items.count = total - stack.count;
 		if (items.count == 0) {
 			return 0;
@@ -50,7 +51,7 @@ size_t Inventory::add(Item items) {
 		}
 
 		stack.type = items.type;
-		stack.count = std::min(items.count, maxStackSize(items.type));
+		stack.count = std::min(items.count, items.maxStackSize());
 		items.count -= stack.count;
 		if (items.count == 0) {
 			return 0;
@@ -92,7 +93,7 @@ Item Inventory::insert(size_t slot, Item stack, bool single) {
 
 	size_t count { single ? 1 : stack.count };
 
-	size_t available { maxStackSize(stored.type) - stored.count };
+	size_t available { stored.maxStackSize() - stored.count };
 	size_t inserted { std::min(available, count) };
 	stored.count += inserted;
 	stack.count -= inserted;
@@ -105,18 +106,79 @@ Item Inventory::insert(size_t slot, Item stack, bool single) {
 void Inventory::render(
     const AssetManager& assetManager, Rectangle bounds) const {
 
+	std::optional<size_t> hoveredIdx {};
 	forEachCell(bounds, [&](size_t i, size_t j, const Rectangle& cell) {
 		Rectangle src { 0.f, 0.f, static_cast<float>(assetManager.frame.width),
 			static_cast<float>(assetManager.frame.height) };
-		if (CheckCollisionPointRec(GetMousePosition(), cell)) {
+		size_t idx { i * m_Cols + j };
+		const Item& stack { m_Items[idx] };
+
+		bool hovered { CheckCollisionPointRec(GetMousePosition(), cell) };
+		if (hovered) {
 			drawTexture(assetManager.frame, src, cell, { 220, 250, 220, 250 });
+			hoveredIdx = idx;
 		} else {
 			drawTexture(assetManager.frame, src, cell, { 180, 180, 200, 240 });
 		}
 
-		const Item& stack { m_Items[i * m_Cols + j] };
 		drawItemStack(assetManager, cell, stack);
 	});
+
+	if (hoveredIdx.has_value()) {
+		renderItemTooltip(hoveredIdx.value());
+	}
+}
+
+void Inventory::renderItemTooltip(size_t idx) const {
+	const Item& stack { this->slot(idx) };
+	if (stack.empty()) {
+		return;
+	}
+
+	bool hasCount { stack.count > 1 };
+
+	constexpr int fontSize { 18 };
+	const std::string& name { stack.name() };
+	const std::string countStr { hasCount ? " x" + std::to_string(stack.count)
+		                                    : "" };
+	// TODO: add description
+
+	int nameWidth { MeasureText(name.c_str(), fontSize) };
+	int countWidth { countStr.empty() ? 0
+		                                : MeasureText(countStr.c_str(), fontSize) };
+	int textWidth { nameWidth + countWidth };
+
+	constexpr int tooltipPaddingX = 12;
+	constexpr int tooltipPaddingY = 8;
+	int width { textWidth + tooltipPaddingX * 2 };
+	int height { fontSize + tooltipPaddingY * 2 };
+
+	Vector2 mousePos = GetMousePosition();
+	Vector2 pos { mousePos.x + 16.f, mousePos.y - 16.f };
+	Vector2 screenSize { getScreenSize() };
+	if (pos.x + width > screenSize.x) {
+		pos.x = mousePos.x - width - 16.f;
+	}
+	if (pos.y < 0) {
+		pos.y = mousePos.y + height + 16.f;
+	}
+
+	Rectangle bounds {
+		pos.x,
+		pos.y,
+		static_cast<float>(width),
+		static_cast<float>(height),
+	};
+	DrawRectangleRounded(bounds, 0.25f, 8, { 0, 0, 0, 200 });
+	DrawRectangleRoundedLinesEx(bounds, 0.25f, 9, 1.f, { 80, 80, 90, 220 });
+
+	float textX { pos.x + tooltipPaddingX };
+	float textY { pos.y + tooltipPaddingY };
+	DrawText(name.c_str(), textX, textY, fontSize, WHITE);
+	if (!countStr.empty()) {
+		DrawText(countStr.c_str(), textX + nameWidth, textY, fontSize,
+		    { 200, 200, 255, 255 });
+	}
 }
 
 Json Inventory::formatToJson() const {
