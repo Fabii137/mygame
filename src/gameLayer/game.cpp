@@ -106,6 +106,8 @@ bool Game::init() {
 
 	m_Player.teleport({ 20.f, 120.f });
 
+	saveWorld(m_GameMap, m_Entities, m_Player);
+
 	return true;
 }
 

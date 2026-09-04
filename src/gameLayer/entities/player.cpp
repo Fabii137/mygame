@@ -164,7 +164,7 @@ bool Player::loadFromJson(Json& json) {
 
 	if (json.contains("inventory")) {
 		auto inventoryJson = json["inventory"];
-		if (!m_Inventory.loadFromJson(json)) {
+		if (!m_Inventory.loadFromJson(inventoryJson)) {
 			return false;
 		}
 	}
