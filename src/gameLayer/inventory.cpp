@@ -1,3 +1,4 @@
+#include <string>
 #include <utility>
 
 #include "inventory.hpp"
@@ -131,14 +132,50 @@ void Inventory::renderItemTooltip(size_t slot) const {
 		return;
 	}
 
-	Vector2 mousePos = GetMousePosition();
+	bool hasCount { stack.count > 1 };
 
-	std::string tooltip = stack.name();
-	if (stack.count > 1) {
-		tooltip += " x" + std::to_string(stack.count);
+	constexpr int fontSize { 18 };
+	const std::string& name { stack.name() };
+	const std::string countStr { hasCount ? " x" + std::to_string(stack.count)
+		                                    : "" };
+	// TODO: add description
+
+	int nameWidth { MeasureText(name.c_str(), fontSize) };
+	int countWidth { countStr.empty() ? 0
+		                                : MeasureText(countStr.c_str(), fontSize) };
+	int textWidth { nameWidth + countWidth };
+
+	constexpr int tooltipPaddingX = 12;
+	constexpr int tooltipPaddingY = 8;
+	int width { textWidth + tooltipPaddingX * 2 };
+	int height { fontSize + tooltipPaddingY * 2 };
+
+	Vector2 mousePos = GetMousePosition();
+	Vector2 pos { mousePos.x + 16.f, mousePos.y - 16.f };
+	Vector2 screenSize { getScreenSize() };
+	if (pos.x + width > screenSize.x) {
+		pos.x = mousePos.x - width - 16.f;
+	}
+	if (pos.y > screenSize.y) {
+		pos.y = mousePos.y + height + 16.f;
 	}
 
-	DrawText(tooltip.c_str(), mousePos.x + 16.f, mousePos.y + 16.f, 18, WHITE);
+	Rectangle bounds {
+		pos.x,
+		pos.y,
+		static_cast<float>(width),
+		static_cast<float>(height),
+	};
+	DrawRectangleRounded(bounds, 0.25f, 8, { 0, 0, 0, 200 });
+	DrawRectangleRoundedLinesEx(bounds, 0.25f, 9, 1.f, { 80, 80, 90, 220 });
+
+	float textX { pos.x + tooltipPaddingX };
+	float textY { pos.y + tooltipPaddingY };
+	DrawText(name.c_str(), textX, textY, fontSize, WHITE);
+	if (!countStr.empty()) {
+		DrawText(countStr.c_str(), textX + nameWidth, textY, fontSize,
+		    { 200, 200, 255, 255 });
+	}
 }
 
 Json Inventory::formatToJson() const {
