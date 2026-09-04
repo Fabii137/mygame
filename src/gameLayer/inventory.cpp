@@ -17,12 +17,12 @@ Inventory::Inventory(size_t slots, size_t cols)
 
 	m_Items.resize(slots);
 
-	for (size_t i {}; i < slots; i += 2) {
-		std::uint16_t type { static_cast<std::uint16_t>(i + 1) };
-		size_t count { static_cast<size_t>(((i + 1) * 20) % maxStackSize(type)) };
-		m_Items[i].type = static_cast<Item::Type>(type);
-		m_Items[i].count = count;
-	}
+	// for (size_t i {}; i < slots; i += 2) {
+	// 	std::uint16_t type { static_cast<std::uint16_t>(i + 1) };
+	// 	size_t count { static_cast<size_t>(((i + 1) * 20) % maxStackSize(type)) };
+	// 	m_Items[i].type = static_cast<Item::Type>(type);
+	// 	m_Items[i].count = count;
+	// }
 }
 
 size_t Inventory::add(Item items) {
