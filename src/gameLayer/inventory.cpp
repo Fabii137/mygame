@@ -106,14 +106,17 @@ Item Inventory::insert(size_t slot, Item stack, bool single) {
 void Inventory::render(
     const AssetManager& assetManager, Rectangle bounds) const {
 
+	std::optional<size_t> hoveredIdx {};
 	forEachCell(bounds, [&](size_t i, size_t j, const Rectangle& cell) {
 		Rectangle src { 0.f, 0.f, static_cast<float>(assetManager.frame.width),
 			static_cast<float>(assetManager.frame.height) };
-		const Item& stack { m_Items[i * m_Cols + j] };
+		size_t idx { i * m_Cols + j };
+		const Item& stack { m_Items[idx] };
 
 		bool hovered { CheckCollisionPointRec(GetMousePosition(), cell) };
 		if (hovered) {
 			drawTexture(assetManager.frame, src, cell, { 220, 250, 220, 250 });
+			hoveredIdx = idx;
 		} else {
 			drawTexture(assetManager.frame, src, cell, { 180, 180, 200, 240 });
 		}
@@ -121,13 +124,13 @@ void Inventory::render(
 		drawItemStack(assetManager, cell, stack);
 	});
 
-	if (auto slot = hoveredSlot(bounds)) {
-		renderItemTooltip(slot.value());
+	if (hoveredIdx.has_value()) {
+		renderItemTooltip(hoveredIdx.value());
 	}
 }
 
-void Inventory::renderItemTooltip(size_t slot) const {
-	const Item& stack { this->slot(slot) };
+void Inventory::renderItemTooltip(size_t idx) const {
+	const Item& stack { this->slot(idx) };
 	if (stack.empty()) {
 		return;
 	}
@@ -156,7 +159,7 @@ void Inventory::renderItemTooltip(size_t slot) const {
 	if (pos.x + width > screenSize.x) {
 		pos.x = mousePos.x - width - 16.f;
 	}
-	if (pos.y > screenSize.y) {
+	if (pos.y < 0) {
 		pos.y = mousePos.y + height + 16.f;
 	}
 

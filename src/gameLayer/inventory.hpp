@@ -43,7 +43,7 @@ private:
 
 	size_t rows() const;
 
-	void renderItemTooltip(size_t slot) const;
+	void renderItemTooltip(size_t idx) const;
 
 private:
 	static constexpr float PADDING { 0.1f };

@@ -241,8 +241,8 @@ inline const char* blockName(std::uint16_t type) {
 		return "Furnace";
 	case Block::Painting:
 		return "Painting";
-	case Block::Sappling:
-		return "Sappling";
+	case Block::Sapling:
+		return "Sapling";
 	case Block::SnowBlueRuby:
 		return "Snow Blue Ruby";
 	case Block::BlueRubyBlock:
@@ -328,8 +328,8 @@ inline const char* wallName(std::uint16_t type) {
 		return "Stone Bricks Wall";
 	case Wall::RubyBlockWall:
 		return "Ruby Block Wall";
-	case Wall::HeroglyphWall:
-		return "Heroglyph Wall";
+	case Wall::HieroglyphWall:
+		return "Hieroglyph Wall";
 	case Wall::BlueRubyWall:
 		return "Blue Ruby Wall";
 	case Wall::PlankedWall:
@@ -460,6 +460,6 @@ inline const char* itemName(std::uint16_t type) {
 		return "Ice Boots";
 	}
 
-	permaAssertCommentDevelopment(true, "Unknown item type in itemName()");
+	permaAssertCommentDevelopment(false, "Unknown item type in itemName()");
 	return "Unknown";
 }
